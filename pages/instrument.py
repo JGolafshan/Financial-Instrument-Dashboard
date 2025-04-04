@@ -33,7 +33,7 @@ st.query_params.code = instrument_code
 
 # Load Components
 search_query = sidebar.sidebar()
-utils.user_compoenet()
+utils.user_component()
 
 current_price = 40
 strike = 45

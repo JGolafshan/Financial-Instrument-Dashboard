@@ -27,7 +27,7 @@ set_page_state("pages/home.py")
 
 # Load Components
 search_query = sidebar.sidebar()
-utils.user_compoenet()
+utils.user_component()
 
 st.markdown("""
     ## 🏠 **Welcome to the Stock Dashboard**

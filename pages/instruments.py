@@ -19,7 +19,7 @@ set_page_state(f"pages/{__name__}")
 
 # Load Components
 search_query = sidebar.sidebar()
-utils.user_compoenet()
+utils.user_component()
 
 # Sample stock data in JSON format
 stock_data = [

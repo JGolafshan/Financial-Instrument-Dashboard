@@ -27,7 +27,7 @@ set_page_state("pages/error_page.py")
 
 # Load Components
 search_query = sidebar.sidebar()
-utils.user_compoenet()
+utils.user_component()
 
 st.error(f"⚠️ \n \n Error \n \n **{"An Error Happended..."}** ")
 

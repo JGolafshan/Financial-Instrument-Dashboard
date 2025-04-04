@@ -11,7 +11,6 @@ import streamlit as st
 import streamlit_js_eval
 
 
-
 def yahoo_data(ticker: str) -> Optional[Any]:
     try:
         return yf.Ticker(ticker)
@@ -20,7 +19,6 @@ def yahoo_data(ticker: str) -> Optional[Any]:
 
 
 def search_logic(value: str):
-    print(st.session_state.get("current_page"))
     if value:
         if "code" in st.session_state and st.session_state.get("current_page") == "pages/instrument.py":
             st.session_state.code = value
@@ -30,7 +28,7 @@ def search_logic(value: str):
             st.switch_page("pages/instrument.py")
 
 
-def user_compoenet():
+def user_component():
     # HTML for floating user ID box with a copy button
     session_id = st.session_state.get("session_id", "USER-123456")
 
@@ -38,7 +36,6 @@ def user_compoenet():
         <div class="floating-user-id">
             <span>🆔 </span>
             <span>{session_id}</span>
-            <button class="copy-btn" id="copyButton">Copy</button>
         </div>
     """, unsafe_allow_html=True)
 

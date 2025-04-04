@@ -26,7 +26,7 @@ set_page_state(f"pages/{__name__}")
 
 # Load Components
 sidebar.sidebar()
-utils.user_compoenet()
+utils.user_component()
 
 with st.container(key="search_container"):
     st.markdown('<div class="center-column">', unsafe_allow_html=True)
