@@ -8,31 +8,17 @@
 
 import numpy as np
 import streamlit as st
-from src import cookies
-from src.black_scholes_model import BlackScholes
-from src.components import sidebar
-from src.heatmap_graph import plot_heatmap
-from utils import utils
-from utils.utils import set_page_state
 
-st.set_page_config(
-    page_title="Overview",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-# Load Default Data
-st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
-
-# Session Data
-session_id = cookies.get_session_id()
-set_page_state("pages/instrument.py")
-instrument_code = st.session_state.get("code", "NONE")
-st.query_params.code = instrument_code
+from src.components.heatmap_graph import plot_heatmap
+from src.core.black_scholes_model import BlackScholes
+from src.utils import utils
+from src.utils.utils import set_page_state
 
 # Load Components
-search_query = sidebar.sidebar()
-utils.user_component()
+set_page_state(f"pages/{__name__}")
+
+instrument_code = st.session_state.get("code", "NONE")
+st.query_params.code = instrument_code
 
 current_price = 40
 strike = 45

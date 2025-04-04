@@ -1,49 +1,36 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""
-    Date: 03/04/2024
-    Author: Joshua David Golafshan
-"""
-
+import uuid
 import streamlit as st
-from src import cookies
+import extra_streamlit_components as stx
 from src.components import sidebar
-from utils import utils
-from utils.utils import set_page_state
+from src.utils import utils
 
-# Page Configuration
-st.set_page_config(
-    page_title="Home Page",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-# Load Default Data
+with st.empty():
+    @st.cache_resource
+    def get_manager():
+        return stx.CookieManager()
+
+    cookie_manager = get_manager()
+
+    # Retrieve the existing user_id from cookies
+    user_id = cookie_manager.get("user_id")
+
+    # If no user_id exists, generate and store one
+    if user_id is None:
+        user_id = str(uuid.uuid4())  # Generate a new UUID
+        cookie_manager.set("user_id", user_id)  # Persist in cookies
+    st.session_state["user_id"] = user_id
+
 st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
-
-# Session Data
-session_id = cookies.get_session_id()
-set_page_state("pages/home.py")
-
-# Load Components
-search_query = sidebar.sidebar()
 utils.user_component()
 
-st.markdown("""
-    ## 🏠 **Welcome to the Stock Dashboard**
-    Your all-in-one platform to track, analyze, and explore stock data. Get started with these key features:
+pages = [
+    st.Page("pages/home.py", title="Landing Page", icon=":material/bug_report:"),
+    st.Page("pages/instrument.py", title="Instrument", icon=":material/bug_report:", url_path="instrument"),
+    st.Page("pages/queries.py", title="Historical Queries", icon=":material/bug_report:", url_path="history"),
+    st.Page("pages/search.py", title="Instrument Query", icon=":material/bug_report:", url_path="search"),
+    st.Page("pages/error_page.py", title="Error", icon=":material/bug_report:", url_path="error"),
+]
 
-    ### 🔍 **<a href='/search' target='_self'>Search Stocks</a>**  
-    Find and analyze stocks with ease:
-    - Interactive price charts 📈  
-    - Comprehensive company insights 🏢  
-    - Black-Scholes model for option pricing 📊  
-
-    ### 📌 **<a href='/queries' target='_self'>User Queries</a>**
-    - Browse and filter queries from other users 🗂️  
-    - Search by user ID or review your past queries 🔎  
-
-    **Use the sidebar to navigate or jump straight into analysis with the search bar!** 🚀  
-""", unsafe_allow_html=True)
-
+pg = st.navigation(pages, expanded=True)
+sidebar.sidebar()
+pg.run()

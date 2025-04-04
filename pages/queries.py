@@ -6,31 +6,13 @@
     Author: Joshua David Golafshan
 """
 
-import streamlit as st
-from src import cookies
-from src.components import sidebar
 import pandas as pd
-
-from utils import utils
-from utils.utils import set_page_state
-
-st.set_page_config(
-    page_title="Historical Queries",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Load Default Data
-st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
-
-# Session Data
-session_id = cookies.get_session_id()
-set_page_state(f"pages/{__name__}")
+import streamlit as st
+from src.utils.utils import set_page_state
 
 # Load Components
-search_query = sidebar.sidebar()
-utils.user_component()
+set_page_state(f"pages/{__name__}")
+
 
 st.title("Historical Queries")
 
@@ -55,7 +37,7 @@ def split_frame(input_df, rows):
 side_menu = st.columns((9, 2))
 
 with side_menu[0]:
-    file_path = r"C:\Users\JGola\Documents\Fivver\Projects\BlackScholes\data\queries.json"
+    file_path = r"C:\Users\JGola\Documents\Fivver\Projects\Financial-Instrument-Dashboard\data\queries.json"
     if file_path:
         dataset = load_data(file_path)
         top_menu = st.columns((2, 4, 1))

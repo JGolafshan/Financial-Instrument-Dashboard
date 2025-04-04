@@ -30,7 +30,7 @@ def search_logic(value: str):
 
 def user_component():
     # HTML for floating user ID box with a copy button
-    session_id = st.session_state.get("session_id", "USER-123456")
+    session_id = st.session_state.get("user_id", "USER-123456")
 
     st.markdown(f"""
         <div class="floating-user-id">

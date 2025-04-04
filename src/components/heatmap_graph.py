@@ -8,7 +8,7 @@
 
 import numpy as np
 import plotly.graph_objects as go
-from src.black_scholes_model import BlackScholes
+from src.core.black_scholes_model import BlackScholes
 
 
 def plot_heatmap(bs_model, spot_range, vol_range, strike):

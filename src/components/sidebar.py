@@ -7,8 +7,7 @@
 """
 
 import streamlit as st
-
-from utils import utils
+from src.utils import utils
 
 
 def sidebar():
@@ -18,12 +17,14 @@ def sidebar():
     search_query = st.sidebar.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL")
     utils.search_logic(search_query)
     search_query = None
-    # Show the navigation menu
-    st.sidebar.page_link("app.py", label="Home", icon=":material/home_filled:")
+
+    # Show the navigation
+    st.sidebar.page_link("pages/home.py", label="Home", icon=":material/home_filled:")
     st.sidebar.page_link("pages/instrument.py", label="Instrument Dashboard", icon=":material/dashboard:")
-    st.sidebar.page_link("pages/instruments.py", label="Instruments", icon=":material/explore:")
+    # st.sidebar.page_link("pages/instruments.py", label="Instruments", icon=":material/explore:")
     st.sidebar.page_link("pages/queries.py", label="Queries", icon=":material/history:")
 
+    # Creator container w/ linked-in link
     st.sidebar.markdown(
         """
         <div id="creator-container">

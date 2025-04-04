@@ -1,34 +1,30 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+    Date: 04/04/2024
+    Author: Joshua David Golafshan
+"""
+
 import pandas as pd
 import streamlit as st
-from utils import utils
-from utils.utils import set_page_state
-from src import cookies
-from src.components import sidebar
-
-st.set_page_config(
-    page_title="Instruments",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-# Load Default Data
-st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
-
-# Session Data
-session_id = cookies.get_session_id()
-set_page_state(f"pages/{__name__}")
+from src.utils.utils import set_page_state
 
 # Load Components
-search_query = sidebar.sidebar()
-utils.user_component()
+set_page_state(f"pages/{__name__}")
 
 # Sample stock data in JSON format
 stock_data = [
-    {"ticker": "AAA", "company_name": "First Priority Clo Bond ETF", "exchange_name": "AMEX", "exchange_code": "American Stock Exchange"},
-    {"ticker": "BBB", "company_name": "Second Priority Clo Bond ETF", "exchange_name": "NASDAQ", "exchange_code": "NASDAQ Stock Exchange"},
-    {"ticker": "CCC", "company_name": "Third Priority Clo Bond ETF", "exchange_name": "NYSE", "exchange_code": "New York Stock Exchange"},
-    {"ticker": "DDD", "company_name": "Fourth Priority Clo Bond ETF", "exchange_name": "AMEX", "exchange_code": "American Stock Exchange"},
-    {"ticker": "EEE", "company_name": "Fifth Priority Clo Bond ETF", "exchange_name": "NASDAQ", "exchange_code": "NASDAQ Stock Exchange"},
+    {"ticker": "AAA", "company_name": "First Priority Clo Bond ETF", "exchange_name": "AMEX",
+     "exchange_code": "American Stock Exchange"},
+    {"ticker": "BBB", "company_name": "Second Priority Clo Bond ETF", "exchange_name": "NASDAQ",
+     "exchange_code": "NASDAQ Stock Exchange"},
+    {"ticker": "CCC", "company_name": "Third Priority Clo Bond ETF", "exchange_name": "NYSE",
+     "exchange_code": "New York Stock Exchange"},
+    {"ticker": "DDD", "company_name": "Fourth Priority Clo Bond ETF", "exchange_name": "AMEX",
+     "exchange_code": "American Stock Exchange"},
+    {"ticker": "EEE", "company_name": "Fifth Priority Clo Bond ETF", "exchange_name": "NASDAQ",
+     "exchange_code": "NASDAQ Stock Exchange"},
 ]
 
 # Convert to DataFrame for display
