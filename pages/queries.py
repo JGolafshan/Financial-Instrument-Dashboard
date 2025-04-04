@@ -7,7 +7,8 @@
 """
 
 import streamlit as st
-from src import cookies, sidebar
+from src import cookies
+from src.components import sidebar
 import pandas as pd
 
 from utils import utils

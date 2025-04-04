@@ -7,7 +7,8 @@
 """
 
 import streamlit as st
-from src import sidebar, cookies
+from src import cookies
+from src.components import sidebar
 from utils import utils
 from utils.utils import set_page_state
 

@@ -12,7 +12,8 @@ import pandas as pd
 import streamlit as st
 from src.heatmap_graph import plot_heatmap
 from utils import utils
-from src import cookies, sidebar
+from src import cookies
+from src.components import sidebar
 from src.black_scholes_model import BlackScholes
 from utils.utils import set_page_state
 

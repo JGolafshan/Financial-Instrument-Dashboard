@@ -68,18 +68,6 @@
     align-items: center;
     gap: 10px;
 }
-.copy-btn {
-    background: white;
-    color: black;
-    padding: 5px 10px;
-    border: none;
-    cursor: pointer;
-    font-size: 12px;
-    border-radius: 5px;
-}
-    .copy-btn:hover {
-    background: #ddd;
-}
 
 /* Adjust the size and alignment of the CALL and PUT value containers */
 .metric-container {

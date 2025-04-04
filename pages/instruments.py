@@ -2,7 +2,8 @@ import pandas as pd
 import streamlit as st
 from utils import utils
 from utils.utils import set_page_state
-from src import cookies, sidebar
+from src import cookies
+from src.components import sidebar
 
 st.set_page_config(
     page_title="Instruments",
