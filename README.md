@@ -9,7 +9,7 @@ The dashboard is designed to be user-friendly and interactive, making financial 
 
 Additionally, this repository includes a comprehensive list of over 54,000 tickers, covering a wide range of financial instruments.
 
-https://myappname.streamlit.app/
+https://financial-instrument-dashboard.streamlit.app/
 
 # TODO
 
