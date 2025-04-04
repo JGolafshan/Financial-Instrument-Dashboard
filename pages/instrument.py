@@ -5,16 +5,14 @@
     Date: 04/04/2024
     Author: Joshua David Golafshan
 """
-import random
 
 import numpy as np
-import pandas as pd
 import streamlit as st
+from src import cookies
+from src.black_scholes_model import BlackScholes
+from src.components import sidebar
 from src.heatmap_graph import plot_heatmap
 from utils import utils
-from src import cookies
-from src.components import sidebar
-from src.black_scholes_model import BlackScholes
 from utils.utils import set_page_state
 
 st.set_page_config(
@@ -48,70 +46,39 @@ def show_info():
     yahoo_data = instrument_yahoo.info
     stock_data = instrument_yahoo.history()
     # Create the layout using Streamlit's columns
-    cols = st.columns([0.5, 0.25, 0.25], border=True)
-
-    # First Column (Company Info Card)
+    cols = st.columns([0.2, 0.8])
+    # HEADER SECTION
     with cols[0]:
-        with st.container(key="company-card"):
-            st.markdown(
-                f"""
-                <div style="display: flex;">
-                    <img src="https://picsum.photos/50/50" class="company-logo" alt="Company Logo" >
-                    <div>
-                        <div style="display: flex; align-items: center;">
-                            <h4 class="company-name" style="margin-right: 10px;">{yahoo_data['longName']}</h4> 
-                            <h4 class="company-name">{yahoo_data['symbol']}</h4>
-                        </div>
-                        <div><span class="label">{yahoo_data['sectorDisp']}: </span><span class="value">{yahoo_data["industryDisp"]}</span></div>
-                        <div>
-                            <img class="flag" src="https://picsum.photos/25/25" alt="Country Flag" style="margin-right: 5px;">
-                            <span class="value">Country</span>
-                        </div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-    # Second Column (EOD Card)
+        st.header(f"{yahoo_data['longName']}")
     with cols[1]:
-        st.metric("Price", "70 °F", "1.2 °F")
+        st.subheader(f"({yahoo_data['symbol']})")
 
-    with cols[2]:
-        pass
+    # TABS SECTION
+    tab1, tab2, tab3 = st.tabs(["📈 Historical Chart", "🧮 Black-Scholes", "🎲 Monte Carlo"])
 
-    tab1, tab2, tab3 = st.tabs(["Overview", "BlackSchole Model", "Monty Carlo"])
+    # TAB 1: Historical Chart
     with tab1:
-        st.write("Overview")
+        if not stock_data.empty:
+            st.subheader("📈 Historical Stock Price")
+
+            # User can pick what to view
+
+            st.line_chart(stock_data[["Close"]])
+
+    # TAB 2: Black-Scholes
     with tab2:
-        with st.expander("Settings"):
-            vol_min = st.slider('Min Volatility for Heatmap', min_value=0.01, max_value=1.0, value=volatility * 0.5,
-                                step=0.01)
-            vol_max = st.slider('Max Volatility for Heatmap', min_value=0.01, max_value=1.0, value=volatility * 1.5,
-                                step=0.01)
-            spot_min = st.number_input('Min Spot Price', min_value=0.01, value=current_price * 0.8, step=0.01)
-            spot_max = st.number_input('Max Spot Price', min_value=0.01, value=current_price * 1.2, step=0.01)
-            spot_range = np.linspace(spot_min, spot_max, 10)
-            vol_range = np.linspace(vol_min, vol_max, 10)
+        col1, col2 = st.columns(2, gap="medium")
 
-        input_data = {
-            "Current Asset Price": [current_price],
-            "Strike Price": [strike],
-            "Time to Maturity (Years)": [time_to_maturity],
-            "Volatility (σ)": [volatility],
-            "Risk-Free Interest Rate": [interest_rate],
-        }
-        input_df = pd.DataFrame(input_data)
-        st.table(input_df)
+        with col1:
+            # You can add inputs or explanations here
+            st.markdown("#### Option Pricing Parameters")
 
-        # Calculate Call and Put values
+        # Compute Call and Put values
         bs_model = BlackScholes(time_to_maturity, strike, current_price, volatility, interest_rate)
         call_price, put_price = bs_model.calculate_prices()
 
-        # Display Call and Put Values in colored tables
-        col1, col2 = st.columns([1, 1], gap="small")
-
-        with col1:
-            # Using the custom class for CALL value
+        with col2:
+            st.markdown("#### Computed Prices")
             st.markdown(f"""
                 <div class="metric-container metric-call">
                     <div>
@@ -121,8 +88,6 @@ def show_info():
                 </div>
             """, unsafe_allow_html=True)
 
-        with col2:
-            # Using the custom class for PUT value
             st.markdown(f"""
                 <div class="metric-container metric-put">
                     <div>
@@ -132,24 +97,44 @@ def show_info():
                 </div>
             """, unsafe_allow_html=True)
 
-        st.markdown("")
-        st.title("Options Price - Interactive Heatmap")
+        st.markdown("---")
+        st.subheader("🎯 Options Price - Interactive Heatmap")
         st.info(
-            "Explore how option prices fluctuate with varying 'Spot Prices and Volatility' levels using interactive heatmap parameters, all while maintaining a constant 'Strike Price'.")
+            "Explore how option prices fluctuate with varying **Spot Prices** and **Volatility** levels, keeping Strike Price constant."
+        )
 
-        # Interactive Sliders and Heatmaps for Call and Put Options
-        col1, col2 = st.columns([1, 1], gap="small")
+        with st.expander("⚙️ Heatmap Settings", expanded=True):
+            c1, c2 = st.columns(2)
+            with c1:
+                vol_min = st.slider('Min Volatility', 0.01, 1.0, value=volatility * 0.5, step=0.01)
+                spot_min = st.number_input('Min Spot Price', 0.01, value=current_price * 0.8, step=0.01)
+            with c2:
+                vol_max = st.slider('Max Volatility', 0.01, 1.0, value=volatility * 1.5, step=0.01)
+                spot_max = st.number_input('Max Spot Price', 0.01, value=current_price * 1.2, step=0.01)
+
+            spot_range = np.linspace(spot_min, spot_max, 10)
+            vol_range = np.linspace(vol_min, vol_max, 10)
+
+        st.markdown("### 🔥 Heatmap Visualization")
+        heat_col1, heat_col2 = st.columns(2, gap="medium")
+
         fig_call, fig_put = plot_heatmap(bs_model, spot_range, vol_range, strike)
 
-        with col1:
-            st.subheader("Call Price Heatmap")
+        with heat_col1:
             st.plotly_chart(fig_call, use_container_width=True, config={'displayModeBar': False})
 
-        with col2:
-            st.subheader("Put Price Heatmap")
+        with heat_col2:
             st.plotly_chart(fig_put, use_container_width=True, config={'displayModeBar': False})
+    with tab3:
+        if not stock_data.empty:
+            st.subheader("📈 Historicalsss Stock Price")
+
+            # User can pick what to view
+
+            st.line_chart(stock_data[["Close"]])
 
 
+# PAGE FALLBACK
 if instrument_code and instrument_code != "NONE":
     show_info()
 else:
