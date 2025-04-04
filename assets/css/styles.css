@@ -52,6 +52,35 @@
     height: 22vh;  /* Full viewport height */
 }
 
+
+/* User ID Component */
+.floating-user-id {
+    z-index: 10000;
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.copy-btn {
+    background: white;
+    color: black;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 5px;
+}
+    .copy-btn:hover {
+    background: #ddd;
+}
+
 /* Adjust the size and alignment of the CALL and PUT value containers */
 .metric-container {
     display: flex;

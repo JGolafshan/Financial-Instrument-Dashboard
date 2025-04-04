@@ -40,36 +40,6 @@ def user_compoenet():
             <span>{session_id}</span>
             <button class="copy-btn" id="copyButton">Copy</button>
         </div>
-        
-        <style>
-            .floating-user-id {{
-                z-index: 10000;
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 10px 15px;
-                border-radius: 10px;
-                font-size: 14px;
-                z-index: 1000;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }}
-            .copy-btn {{
-                background: white;
-                color: black;
-                padding: 5px 10px;
-                border: none;
-                cursor: pointer;
-                font-size: 12px;
-                border-radius: 5px;
-            }}
-            .copy-btn:hover {{
-                background: #ddd;
-            }}
-        </style>
     """, unsafe_allow_html=True)
 
 
