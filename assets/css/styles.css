@@ -1,0 +1,127 @@
+.stMainBlockContainer {
+        padding-top: 4rem;
+}
+
+/* Side Bar */
+[data-testid="stMarkdownContainer"] > h1 {
+    padding: 0;
+    padding-bottom: 0.75rem;
+}
+
+.stPageLink {
+    margin-top: 0.5rem;
+}
+[data-testid="stSidebarHeader"] {
+    padding: 0.5rem 1.5rem 1.5rem;
+}
+
+/* Creator Container in Sidebar */
+#creator-container {
+    position: fixed;
+    bottom: 20px;
+    border-radius: 8px;
+}
+
+.code_block {
+    padding: 0.2em 0.4em;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    margin: 0px;
+    border-radius: 0.25rem;
+    background: rgb(26, 28, 36);
+    font-family: "Source Code Pro", monospace;
+    font-size: 0.75em;
+}
+
+#creator-container img {
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+#creator-container a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Search bar Page */
+.center-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 22vh;  /* Full viewport height */
+}
+
+/* Adjust the size and alignment of the CALL and PUT value containers */
+.metric-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px; /* Adjust the padding to control height */
+    width: auto; /* Auto width for responsiveness, or set a fixed width if necessary */
+    margin: 0 auto; /* Center the container */
+}
+
+/* Custom classes for CALL and PUT values */
+.metric-call {
+    background-color: green; /* Light green background */
+    color: black; /* Black font color */
+    margin-right: 10px; /* Spacing between CALL and PUT */
+    border-radius: 10px; /* Rounded corners */
+}
+
+.metric-put {
+    background-color: red; /* Light red background */
+    color: black; /* Black font color */
+    border-radius: 10px; /* Rounded corners */
+}
+
+/* Style for the value text */
+.metric-value {
+    font-size: 1.5rem; /* Adjust font size */
+    font-weight: bold;
+    margin: 0; /* Remove default margins */
+}
+
+/* Style for the label text */
+.metric-label {
+    font-size: 1rem; /* Adjust font size */
+    margin-bottom: 4px; /* Spacing between label and value */
+}
+
+
+
+.st-key-company-card{
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.company-logo {
+    width: 50px;
+    height: 50px;
+}
+
+.company-name {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.value {
+    color: #555;
+}
+
+.flag {
+    width: 25px;
+    height: 25px;
+}
+
+.eod-card {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+}
