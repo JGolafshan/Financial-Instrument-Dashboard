@@ -1,59 +1,46 @@
-# Stock Dashboard
 
 
-This repository provides an interactive dashboard for analyzing financial assets. It includes:
- - Asset Overview – A comprehensive summary of various financial assets.
- - Black-Scholes Pricing Model – An interactive dashboard that visualizes option prices under different market conditions, allowing users to explore the impact of spot price, volatility, and other parameters on option valuation.
+# Financial Instrument Dashboard
 
-The dashboard is designed to be user-friendly and interactive, making financial analysis more accessible and insightful.
+This repository provides an interactive dashboard for analyzing financial instruments. It offers tools for exploring asset data, visualizing option prices, running simulations, and reviewing user-submitted queries.
 
-Additionally, this repository includes a comprehensive list of over 54,000 tickers, covering a wide range of financial instruments.
+### Live Demo
+[https://financial-instrument-dashboard.streamlit.app/](https://financial-instrument-dashboard.streamlit.app/)
 
-https://financial-instrument-dashboard.streamlit.app/
 
-# TODO
+### Key Components
 
-- Query Review
-- Enable custom stock database
-- Database
-- cookie user id
-- Create a document database 
-- Show all requests
-- Improve doc string
-- Improve comments
-- Improve Performance
-- Complete README
+- **Asset Overview**  
+  A detailed summary of various financial instruments with essential metadata and pricing.
 
-# Completed
-- Finish instrument page 
-  - monti carlo
-  - BS Model
-  - Overview
+- **Black-Scholes Pricing Model**  
+  An interactive tool for analyzing option prices under different market scenarios. Users can explore how spot price, volatility, strike price, time to maturity, and interest rates affect option valuation.
 
-- Search Functionality:DONE
-- Error page:DONE
-- Query Page finalized:DONE
-    
-## 🚀 Features:
+- **Monte Carlo Simulation**  
+  A probabilistic simulation to model the future price of an asset based on randomized paths.
 
-1. **Options Pricing Visualization**: 
-   - Displays both Call and Put option prices using an interactive heatmap.
-   - The heatmap dynamically updates as you adjust parameters like Spot Price, Volatility, and Time to Maturity.
-   
-2. **Interactive Dashboard**:
-   - The dashboard allows real-time updates to the Black-Scholes model parameters.
-   - Users can input different values for the Spot Price, Volatility, Strike Price, Time to Maturity, and Risk-Free Interest Rate to observe how these factors influence option prices.
-   - Both Call and Put option prices are calculated and displayed for immediate comparison.
-   
-3. **Customizable Parameters**:
-   - Set custom ranges for Spot Price and Volatility to generate a comprehensive view of option prices under different market conditions.
+- **Query Review System**  
+  Allows users to search and explore past queries—both their own and those submitted by others.
 
-4. **View Other User Queries**:
-   
+The dashboard is designed to be intuitive and interactive, making financial analysis more accessible and informative.
 
-## 🔧 Dependencies: 
-- `yfinance`: To fetch current asset prices.
-- `numpy`: For numerical operations.
-- `matplotlib`: For heatmap visualization.
+It also includes a comprehensive dataset of over 54,000 tickers, covering a wide range of financial instruments from multiple markets.
+
+
+---
+
+## Features
+
+1. **Options Pricing Visualization**  
+   Visualize both Call and Put option prices using an interactive heatmap. The heatmap updates in real time as users adjust key parameters like spot price, volatility, and time to maturity.
+
+2. **Interactive Black-Scholes Dashboard**  
+   Users can dynamically modify model parameters and instantly see the resulting option prices. Inputs include spot price, volatility, strike price, time to maturity, and risk-free interest rate.
+
+3. **Customizable Parameter Ranges**  
+   Define specific ranges for spot price and volatility to gain deeper insights into option pricing across various scenarios.
+
+4. **Query Management**  
+   Submit and view queries related to financial instruments. The system supports personalized tracking and browsing of all user-submitted queries.
 
 
