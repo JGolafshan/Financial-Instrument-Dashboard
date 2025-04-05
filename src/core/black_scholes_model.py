@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+    Date: 04/04/2024
+    Author: Joshua David Golafshan
+"""
+
+
 from numpy import exp, sqrt, log
 from scipy.stats import norm
 
