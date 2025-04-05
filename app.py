@@ -24,11 +24,11 @@ st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
 utils.user_component()
 
 pages = [
-    st.Page("pages/home.py", title="Landing Page", icon=":material/bug_report:"),
-    st.Page("pages/instrument.py", title="Instrument", icon=":material/bug_report:", url_path="instrument"),
-    st.Page("pages/queries.py", title="Historical Queries", icon=":material/bug_report:", url_path="history"),
-    st.Page("pages/search.py", title="Instrument Query", icon=":material/bug_report:", url_path="search"),
-    st.Page("pages/error_page.py", title="Error", icon=":material/bug_report:", url_path="error"),
+    st.Page("pages/home.py", title="Landing Page", icon=":material/show_chart:"),
+    st.Page("pages/instrument.py", title="Instrument", icon=":material/show_chart:", url_path="instrument"),
+    st.Page("pages/queries.py", title="Historical Queries", icon=":material/show_chart:", url_path="history"),
+    st.Page("pages/search.py", title="Instrument Query", icon=":material/show_chart:", url_path="search"),
+    st.Page("pages/error_page.py", title="Error", icon=":material/show_chart:", url_path="error"),
 ]
 
 pg = st.navigation(pages, expanded=True)
