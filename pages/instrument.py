@@ -4,40 +4,79 @@
 """
     Date: 04/04/2024
     Author: Joshua David Golafshan
+    Description: all individual stock (ticker relate functions)
 """
 
 import numpy as np
 import streamlit as st
-
-from src.components.heatmap_graph import plot_heatmap
-from src.core.black_scholes_model import BlackScholes
 from src.utils import utils
 from src.utils.utils import set_page_state
+import plotly.graph_objs as go
+from src.components.heatmap_graph import plot_heatmap
+from src.core.black_scholes_model import BlackScholes
 
 # Load Components
 set_page_state(f"pages/{__name__}")
-
 instrument_code = st.session_state.get("code", "NONE")
 st.query_params.code = instrument_code
 
-current_price = 40
-strike = 45
-time_to_maturity = 1
-volatility = 0.2
-interest_rate = 0.05
+
+def calculate_price_difference(stock_data):
+    latest_price = stock_data.iloc[-1]["Close"]
+    previous_year_price = stock_data.iloc[-252]["Close"] if len(stock_data) > 252 else stock_data.iloc[0]["Close"]
+    price_difference = latest_price - previous_year_price
+    percentage_difference = (price_difference / previous_year_price) * 100
+    return price_difference, percentage_difference
+
+
+def show_header(**kwargs):
+    pass
+
+
+def show_graph():
+    pass
+
+
+def market_open():
+    pass
+    # Change 5 min
+    # Change 30 min
+    # Change 60 min
+
+    # Time til close
+    # Market closed in x
+
+
+def market_closed():
+    pass
+    # Time till open
+    # Location
+    #
 
 
 def show_info():
     instrument_yahoo = utils.yahoo_data(instrument_code)
-    yahoo_data = instrument_yahoo.info
-    stock_data = instrument_yahoo.history()
-    # Create the layout using Streamlit's columns
-    cols = st.columns([0.2, 0.8])
-    # HEADER SECTION
-    with cols[0]:
-        st.header(f"{yahoo_data['longName']}")
-    with cols[1]:
-        st.subheader(f"({yahoo_data['symbol']})")
+
+    if instrument_yahoo:
+        stock_data = instrument_yahoo.history()
+
+        if stock_data is not None:
+            price_difference, percentage_difference = calculate_price_difference(stock_data)
+            latest_close_price = stock_data.iloc[-1]["Close"]
+            max_52_week_high = stock_data["High"].tail(252).max()
+            min_52_week_low = stock_data["Low"].tail(252).min()
+
+        col0, col1, col2, col3, col4 = st.columns([0.2, 0.15, 0.15, 0.15, 0.15], )
+        with col0:
+            st.metric("Close Price", f"${latest_close_price:.2f}")
+        with col1:
+            st.metric("Close Price", f"${latest_close_price:.2f}")
+        with col2:
+            st.metric("Price Difference (YoY)", f"${price_difference:.2f}", f"{percentage_difference:+.2f}%")
+        with col3:
+            st.metric("52-Week High", f"${max_52_week_high:.2f}")
+        with col4:
+            st.metric("52-Week Low", f"${min_52_week_low:.2f}")
 
     # TABS SECTION
     tab1, tab2, tab3 = st.tabs(["📈 Historical Chart", "🧮 Black-Scholes", "🎲 Monte Carlo"])
@@ -45,19 +84,46 @@ def show_info():
     # TAB 1: Historical Chart
     with tab1:
         if not stock_data.empty:
-            st.subheader("📈 Historical Stock Price")
-
             # User can pick what to view
-
-            st.line_chart(stock_data[["Close"]])
+            candlestick_chart = go.Figure(data=[
+                go.Candlestick(x=stock_data.index, open=stock_data['Open'], high=stock_data['High'],
+                               low=stock_data['Low'], close=stock_data['Close'])])
+            candlestick_chart.update_xaxes(
+                rangeslider_visible=True,
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1, label="1m", step="month", stepmode="backward"),
+                        dict(count=6, label="6m", step="month", stepmode="backward"),
+                        dict(count=1, label="YTD", step="year", stepmode="todate"),
+                        dict(count=1, label="1y", step="year", stepmode="backward"),
+                        dict(step="all")
+                    ])
+                )
+            )
+            candlestick_chart.update_layout(xaxis_rangeslider_visible=False)
+            st.plotly_chart(candlestick_chart, use_container_width=True)
 
     # TAB 2: Black-Scholes
     with tab2:
-        col1, col2 = st.columns(2, gap="medium")
+        col1, col2,col3 = st.columns(3, gap="medium")
 
         with col1:
             # You can add inputs or explanations here
             st.markdown("#### Option Pricing Parameters")
+            input_columns = st.columns(2)
+
+            with input_columns[0]:
+                current_price = st.number_input(label="Current Price", value=st.session_state.get("bs_current_price", 40), key="bs_current_price")
+
+                strike = st.number_input(label="Strike", value=45, key="bs_strike")
+
+            with input_columns[1]:
+                volatility = st.number_input(label="Volatility", value=0.2, key="bs_volatility")
+                interest_rate = st.number_input(label="Interest rate", value=0.05, key="bs_interest_rate")
+
+            time_to_maturity = st.number_input(label="Time to maturity", value=1, key="bs_time_to_maturity")
+
+
 
         # Compute Call and Put values
         bs_model = BlackScholes(time_to_maturity, strike, current_price, volatility, interest_rate)
@@ -83,11 +149,13 @@ def show_info():
                 </div>
             """, unsafe_allow_html=True)
 
+        with col3:
+            bs_model = BlackScholes(time_to_maturity, strike, current_price, volatility, interest_rate)
+            greeks = bs_model.calculate_greeks()
+            st.write(greeks)
+
         st.markdown("---")
         st.subheader("🎯 Options Price - Interactive Heatmap")
-        st.info(
-            "Explore how option prices fluctuate with varying **Spot Prices** and **Volatility** levels, keeping Strike Price constant."
-        )
 
         with st.expander("⚙️ Heatmap Settings", expanded=True):
             c1, c2 = st.columns(2)
@@ -101,7 +169,6 @@ def show_info():
             spot_range = np.linspace(spot_min, spot_max, 10)
             vol_range = np.linspace(vol_min, vol_max, 10)
 
-        st.markdown("### 🔥 Heatmap Visualization")
         heat_col1, heat_col2 = st.columns(2, gap="medium")
 
         fig_call, fig_put = plot_heatmap(bs_model, spot_range, vol_range, strike)
