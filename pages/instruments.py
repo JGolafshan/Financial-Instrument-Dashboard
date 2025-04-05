@@ -4,6 +4,8 @@
 """
     Date: 04/04/2024
     Author: Joshua David Golafshan
+    Description: List all instruments available
+
 """
 
 import pandas as pd

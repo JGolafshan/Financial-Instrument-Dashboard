@@ -4,6 +4,7 @@
 """
     Date: 04/04/2024
     Author: Joshua David Golafshan
+    Description: This is the default page - the initial page that the user sees.
 """
 
 import streamlit as st

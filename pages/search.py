@@ -4,6 +4,8 @@
 """
     Date: 04/04/2024
     Author: Joshua David Golafshan
+    Description: A page with a search bar that redirects to instrument.py
+
 """
 
 import streamlit as st
