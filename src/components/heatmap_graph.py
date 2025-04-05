@@ -52,10 +52,11 @@ def plot_heatmap(bs_model, spot_range, vol_range, strike):
             y=np.round(vol_range, 2),
             colorscale=custom_colorscale,
             colorbar=dict(title="Call Price"),
+            hovertemplate='Spot Price: %{x}<br>Volatility: %{y}<br>Premium: %{z}<extra></extra>'
         )
     )
     fig_call.update_layout(
-        title=dict(text="Call Option", x=0.5, xanchor="center"),  # Centered Title
+        title=dict(text="Call Option", x=0.5, y=0.86, xanchor="center"),  # Centered Title
         xaxis_title="Spot Price",
         yaxis_title="Volatility",
     )
@@ -68,10 +69,12 @@ def plot_heatmap(bs_model, spot_range, vol_range, strike):
             y=np.round(vol_range, 2),
             colorscale=custom_colorscale,
             colorbar=dict(title="Put Price"),
+            hovertemplate='Spot Price: %{x}<br>Volatility: %{y}<br>Premium: %{z}<extra></extra>'
+
         )
     )
     fig_put.update_layout(
-        title=dict(text="Put Option", x=0.5, xanchor="center"),  # Centered Title
+        title=dict(text="Put Option", x=0.5, y=0.86, xanchor="center"),  # Centered Title
         xaxis_title="Spot Price",
         yaxis_title="Volatility",
     )
