@@ -59,6 +59,7 @@ def show_info():
 
     if instrument_yahoo:
         stock_data = instrument_yahoo.history()
+        stock_info = instrument_yahoo.info
 
         if stock_data is not None:
             price_difference, percentage_difference = calculate_price_difference(stock_data)
@@ -66,6 +67,12 @@ def show_info():
             max_52_week_high = stock_data["High"].tail(252).max()
             min_52_week_low = stock_data["Low"].tail(252).min()
 
+        st.html(f"""
+            <div style="display:flex; align-items: baseline;">
+                <div style="font-size:2.25rem">{stock_info["longName"]}</div> 
+                <div style="padding-left:1rem; font-size:2.25rem">({stock_info["symbol"]})</div>
+            </div>
+        """)
         col0, col1, col2, col3, col4 = st.columns([0.2, 0.15, 0.15, 0.15, 0.15], )
         with col0:
             st.metric("Close Price", f"${latest_close_price:.2f}")
@@ -105,7 +112,7 @@ def show_info():
 
     # TAB 2: Black-Scholes
     with tab2:
-        col1, col2,col3 = st.columns(3, gap="medium")
+        col1, col2, col3 = st.columns(3, gap="medium")
 
         with col1:
             # You can add inputs or explanations here
@@ -113,7 +120,9 @@ def show_info():
             input_columns = st.columns(2)
 
             with input_columns[0]:
-                current_price = st.number_input(label="Current Price", value=st.session_state.get("bs_current_price", 40), key="bs_current_price")
+                current_price = st.number_input(label="Current Price",
+                                                value=st.session_state.get("bs_current_price", 40),
+                                                key="bs_current_price")
 
                 strike = st.number_input(label="Strike", value=45, key="bs_strike")
 
@@ -122,8 +131,6 @@ def show_info():
                 interest_rate = st.number_input(label="Interest rate", value=0.05, key="bs_interest_rate")
 
             time_to_maturity = st.number_input(label="Time to maturity", value=1, key="bs_time_to_maturity")
-
-
 
         # Compute Call and Put values
         bs_model = BlackScholes(time_to_maturity, strike, current_price, volatility, interest_rate)
