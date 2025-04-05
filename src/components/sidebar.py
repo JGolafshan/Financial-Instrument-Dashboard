@@ -16,7 +16,6 @@ def sidebar():
     # Search for a stock
     search_query = st.sidebar.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL")
     utils.search_logic(search_query)
-    search_query = None
 
     # Show the navigation
     st.sidebar.page_link("pages/home.py", label="Home", icon=":material/home_filled:")
