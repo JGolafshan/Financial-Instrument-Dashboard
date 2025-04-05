@@ -8,19 +8,38 @@
 
 import streamlit as st
 
+st.title("Welcome to the Stock Dashboard")
+
 st.markdown("""
-    ## 🏠 **Welcome to the Stock Dashboard**
-    Your all-in-one platform to track, analyze, and explore stock data. Get started with these key features:
+A comprehensive platform for tracking, analyzing, and exploring financial market data. Utilize interactive tools and advanced analytics to support your investment decisions.
+""")
 
-    ### 🔍 **<a href='/search' target='_self'>Search Stocks</a>**  
-    Find and analyze stocks with ease:
-    - Interactive price charts 📈  
-    - Comprehensive company insights 🏢  
-    - Black-Scholes model for option pricing 📊  
+st.markdown("---")
 
-    ### 📌 **<a href='/queries' target='_self'>User Queries</a>**
-    - Browse and filter queries from other users 🗂️  
-    - Search by user ID or review your past queries 🔎  
+cols = st.columns([0.1, 0.4, 0.4, 0.1])
 
-    **Use the sidebar to navigate or jump straight into analysis with the search bar!** 🚀  
-""", unsafe_allow_html=True)
+with cols[1]:
+    st.subheader("Search Stocks")
+    st.write("""
+    **Discover and evaluate stocks with robust features:**
+    - Interactive price and performance charts  
+    - Detailed company profiles and financial metrics  
+    - Option pricing using the Black-Scholes model
+    """)
+    if st.button("Go to Search Stocks"):
+        st.switch_page("pages/search.py")  # Use the relative path of your search page script
+
+with cols[2]:
+    st.subheader("User Queries")
+    st.write("""
+    **Access and manage user-generated insights:**
+    - Browse and filter historical search queries  
+    - Search by user ID or review your previous activity
+    - Open the relevant page with the exact parameters the user originally used, duplicating their query and context
+    """)
+    if st.button("Go to User Queries"):
+        st.switch_page("pages/queries.py")  # Adjust this path based on your folder structure
+
+st.markdown("---")
+
+st.info("Use the sidebar to navigate or begin your analysis directly.")
