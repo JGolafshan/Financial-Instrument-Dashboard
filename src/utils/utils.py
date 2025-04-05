@@ -8,7 +8,6 @@
 from typing import Optional, Any
 import yfinance as yf
 import streamlit as st
-import streamlit_js_eval
 
 
 def yahoo_data(ticker: str) -> Optional[Any]:
