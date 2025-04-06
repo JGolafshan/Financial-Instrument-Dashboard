@@ -11,7 +11,7 @@ from numpy import exp, sqrt, log
 from scipy.stats import norm
 
 
-class BlackScholes:
+class BlackScholesModel:
     def __init__(self, time_to_maturity: float, strike: float, current_price: float,
                  volatility: float, interest_rate: float):
         """
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     interest_rate = 0.05
 
     # Black Scholes
-    BS = BlackScholes(
+    BS = BlackScholesModel(
         time_to_maturity=time_to_maturity,
         strike=strike,
         current_price=current_price,
