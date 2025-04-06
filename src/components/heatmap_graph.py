@@ -8,7 +8,7 @@
 
 import numpy as np
 import plotly.graph_objects as go
-from src.core.black_scholes_model import BlackScholes
+from src.core.black_scholes_model import BlackScholesModel
 
 
 def plot_heatmap(bs_model, spot_range, vol_range, strike):
@@ -33,7 +33,7 @@ def plot_heatmap(bs_model, spot_range, vol_range, strike):
     # Compute prices across spot and volatility ranges
     for i, vol in enumerate(vol_range):
         for j, spot in enumerate(spot_range):
-            bs_temp = BlackScholes(
+            bs_temp = BlackScholesModel(
                 time_to_maturity=bs_model.time_to_maturity,
                 strike=strike,
                 current_price=spot,
