@@ -1,6 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+    Date: 04/04/2024
+    Author: Joshua David Golafshan
+"""
+
 import streamlit as st
 import pandas as pd
 import pymongo
+
+from src.utils.utils import set_page_state
+
+# Load Components
+set_page_state("pages/queries.py")
+
 
 st.title("User Activity")
 
@@ -17,19 +31,27 @@ def load_data(file_path):
 def split_frame(input_df, rows):
     return [input_df.iloc[i:i + rows, :] for i in range(0, len(input_df), rows)]
 
+
 # --- File path ---
 raw_data = [
-  {
-    "user_id": "6a1e8b5b-dac9-4277-aca6-c07045b5ee06",
-    "date_time": "2025-04-04 10:20:30"
-  },
     {
-    "user_id": "6a1e8b5b-dac9-4277-aca6-c07045b5ee06",
-    "date_time": "2025-04-04 10:20:30"
-  }
+        "user_id": "6a1e8b5b-dac9-4277-aca6-c07045b5ee06",
+        "date_time": "2025-04-04 10:20:30",
+        "url": "/instrument",
+        "type": "viewed",
+        "link": "/instrument?code=GOOG"
+    },
+    {
+        "user_id": "6a1e8b5b-dac9-4277-aca6-c07045b5ee06",
+        "date_time": "2025-04-04 10:20:30",
+        "url": "/instrument",
+        "type": "viewed",
+        "link": "/instrument?code=AAPL"
+    }
 ]
 dataset = pd.json_normalize(raw_data)
-dataset.rename(columns={'user_id': 'User ID', 'date_time': 'DateTime'}, inplace=True)
+dataset.rename(columns={'user_id': 'User ID', 'date_time': 'DateTime', "url": "URL", "type": "Type"}, inplace=True)
+
 
 # --- Filter Function ---
 def filter_data(search_query="", user_id_filter="", date_filter=None):
@@ -69,7 +91,6 @@ def filter_data(search_query="", user_id_filter="", date_filter=None):
     return df
 
 
-
 side_menu = st.columns((9, 2))
 
 # --- Layout: Advanced Filtering
@@ -89,7 +110,8 @@ with side_menu[0]:
     # Search input
     with top_menu[0]:
         search_box_input = st.text_input("Search", placeholder="Type to search...")
-        filtered_df = filter_data(search_box_input, st.session_state.get("filter_user_id", None), st.session_state.get("filter_date", None))
+        filtered_df = filter_data(search_box_input, st.session_state.get("filter_user_id", None),
+                                  st.session_state.get("filter_date", None))
 
     # Page size selector
     with top_menu[2]:

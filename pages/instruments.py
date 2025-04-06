@@ -13,7 +13,7 @@ import streamlit as st
 from src.utils.utils import set_page_state
 
 # Load Components
-set_page_state(f"pages/{__name__}")
+set_page_state("pages/instruments.py")
 
 # Sample stock data in JSON format
 stock_data = [

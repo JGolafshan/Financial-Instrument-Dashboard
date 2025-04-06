@@ -8,6 +8,10 @@
 """
 
 import streamlit as st
+from src.utils.utils import set_page_state
+
+# Load Components
+set_page_state("pages/home.py")
 
 st.title("Welcome to the Stock Dashboard")
 

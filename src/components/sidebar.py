@@ -14,7 +14,7 @@ def sidebar():
     st.sidebar.title("📊 Stock Dashboard")
 
     # Search for a stock
-    search_query = st.sidebar.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL")
+    search_query = st.sidebar.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL", key="small_search")
     utils.search_logic(search_query)
 
     # Show the navigation

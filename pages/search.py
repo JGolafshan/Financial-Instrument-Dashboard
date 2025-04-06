@@ -13,7 +13,7 @@ from src.utils import utils
 from src.utils.utils import set_page_state
 
 # Load Components
-set_page_state(f"pages/{__name__}")
+set_page_state("pages/search.py")
 
 # A page that just contains a search bar with text
 with st.container(key="search_container"):

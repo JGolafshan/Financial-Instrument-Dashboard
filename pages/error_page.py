@@ -6,6 +6,11 @@
     Author: Joshua David Golafshan
 """
 import streamlit as st
+from src.utils.utils import set_page_state
+
+# Load Components
+set_page_state("pages/error_page.py")
+
 
 # Show an error message
 st.error(f"⚠️ \n \n Error \n \n **{"An Error Happended..."}** ")

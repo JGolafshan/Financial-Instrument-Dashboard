@@ -16,10 +16,14 @@ from src.components.heatmap_graph import plot_heatmap
 from src.core.black_scholes_model import BlackScholes
 
 # Load Components
-set_page_state(f"pages/{__name__}")
+set_page_state("pages/instrument.py")
+
+
 instrument_code = st.session_state.get("code", "NONE")
 st.query_params.code = instrument_code
 
+print(st.query_params.to_dict())
+print(st.session_state.to_dict())
 
 def calculate_price_difference(stock_data):
     latest_price = stock_data.iloc[-1]["Close"]
@@ -75,7 +79,8 @@ def show_info():
         """)
         col0, col1, col2, col3, col4 = st.columns([0.2, 0.15, 0.15, 0.15, 0.15], )
         with col0:
-            st.metric("Close Price", f"${latest_close_price:.2f}")
+            with st.container():
+                pass
         with col1:
             st.metric("Close Price", f"${latest_close_price:.2f}")
         with col2:
@@ -199,3 +204,6 @@ if instrument_code and instrument_code != "NONE":
     show_info()
 else:
     st.switch_page("pages/search.py")
+
+
+
