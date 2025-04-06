@@ -13,17 +13,17 @@ from src.utils import utils
 from src.utils.utils import set_page_state
 import plotly.graph_objs as go
 from src.components.heatmap_graph import plot_heatmap
-from src.core.black_scholes_model import BlackScholes
+from src.core.black_scholes_model import BlackScholesModel
 
 # Load Components
 set_page_state("pages/instrument.py")
-
 
 instrument_code = st.session_state.get("code", "NONE")
 st.query_params.code = instrument_code
 
 print(st.query_params.to_dict())
 print(st.session_state.to_dict())
+
 
 def calculate_price_difference(stock_data):
     latest_price = stock_data.iloc[-1]["Close"]
@@ -138,7 +138,7 @@ def show_info():
             time_to_maturity = st.number_input(label="Time to maturity", value=1, key="bs_time_to_maturity")
 
         # Compute Call and Put values
-        bs_model = BlackScholes(time_to_maturity, strike, current_price, volatility, interest_rate)
+        bs_model = BlackScholesModel(time_to_maturity, strike, current_price, volatility, interest_rate)
         call_price, put_price = bs_model.calculate_prices()
 
         with col2:
@@ -162,7 +162,7 @@ def show_info():
             """, unsafe_allow_html=True)
 
         with col3:
-            bs_model = BlackScholes(time_to_maturity, strike, current_price, volatility, interest_rate)
+            bs_model = BlackScholesModel(time_to_maturity, strike, current_price, volatility, interest_rate)
             greeks = bs_model.calculate_greeks()
             st.write(greeks)
 
@@ -204,6 +204,3 @@ if instrument_code and instrument_code != "NONE":
     show_info()
 else:
     st.switch_page("pages/search.py")
-
-
-
