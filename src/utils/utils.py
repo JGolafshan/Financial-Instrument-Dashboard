@@ -10,21 +10,19 @@ import yfinance as yf
 import streamlit as st
 
 
+def search_logic(value: str):
+    if value:
+        st.session_state.code = value
+        st.session_state["current_page"] = "pages/instrument.py"
+        st.switch_page("pages/instrument.py")
+        st.experimental_rerun()  # Rerun to trigger page change
+
+
 def yahoo_data(ticker: str) -> Optional[Any]:
     try:
         return yf.Ticker(ticker)
     except:
         return None
-
-
-def search_logic(value: str):
-    if value:
-        if "code" in st.session_state and st.session_state.get("current_page") == "pages/instrument.py":
-            st.session_state.code = value
-        else:
-            st.session_state.code = value
-            set_page_state("pages/instrument.py")
-            st.switch_page("pages/instrument.py")
 
 
 def user_component():

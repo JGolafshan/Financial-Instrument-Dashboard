@@ -13,9 +13,14 @@ from src.utils.utils import search_logic
 def sidebar():
     st.sidebar.title("📊 Stock Dashboard")
 
-    # Search bar container
+    search_bar_sidebar()
+    add_navigation_links()
+    author_details()
+
+
+def search_bar_sidebar():
     with st.sidebar.container(key="search_bar_container"):
-        search_columns = st.sidebar.columns([0.9, 0.1])
+        search_columns = st.sidebar.columns([0.8, 0.2])
         with search_columns[0]:
             search_query = st.sidebar.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL",
                                                  key="small_search")
@@ -24,9 +29,6 @@ def sidebar():
             if st.button("🔍", use_container_width=True):
                 if search_query:
                     search_logic(search_query)
-
-    add_navigation_links()
-    author_details()
 
 
 def add_navigation_links():
