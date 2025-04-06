@@ -47,4 +47,3 @@ with cols[2]:
 
 st.markdown("---")
 
-st.info("Use the sidebar to navigate or begin your analysis directly.")
