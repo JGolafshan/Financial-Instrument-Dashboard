@@ -11,5 +11,4 @@ matplotlib==3.10.1
 alpha-vantage==3.0.0
 beautifulsoup4==4.13.3
 streamlit-js-eval==0.1.7
-streamlit-searchbox==0.1.22
 extra_streamlit_components==0.1.71
