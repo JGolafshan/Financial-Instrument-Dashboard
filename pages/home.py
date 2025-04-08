@@ -46,4 +46,3 @@ with cols[2]:
         st.switch_page("pages/queries.py")  # Adjust this path based on your folder structure
 
 st.markdown("---")
-
