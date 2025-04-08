@@ -1,6 +1,8 @@
 import uuid
 import streamlit as st
 import extra_streamlit_components as stx
+import pymongo
+from pymongo.server_api import ServerApi
 from src.components import sidebar
 from src.utils import utils
 
@@ -8,6 +10,7 @@ with st.empty():
     @st.cache_resource
     def get_manager():
         return stx.CookieManager()
+
 
     cookie_manager = get_manager()
 
@@ -19,6 +22,17 @@ with st.empty():
         user_id = str(uuid.uuid4())  # Generate a new UUID
         cookie_manager.set("user_id", user_id)  # Persist in cookies
     st.session_state["user_id"] = user_id
+
+
+@st.cache_resource
+def get_db_connection():
+    uri = f"mongodb+srv://{st.secrets['mongo']['username']}:{st.secrets['mongo']['password']}@{st.secrets['mongo']['cluster']}/?appName={st.secrets['mongo']['appName']}"
+    client = pymongo.MongoClient(uri, server_api=ServerApi('1'))
+    return client
+
+
+if "db_client" not in st.session_state:
+    st.session_state["db_client"] = get_db_connection()
 
 st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
 utils.user_component()
@@ -34,7 +48,6 @@ error_page = st.Page("pages/error_page.py", title="Error", icon=":material/show_
 
 pg = st.navigation(pages, expanded=True)
 sidebar.sidebar()
-
 
 try:
     pg.run()
