@@ -26,7 +26,8 @@ with st.empty():
 
 @st.cache_resource
 def get_db_connection():
-    uri = f"mongodb+srv://{st.secrets['mongo']['username']}:{st.secrets['mongo']['password']}@{st.secrets['mongo']['cluster']}/?appName={st.secrets['mongo']['appName']}"
+    db_creds = st.secrets['mongo']
+    uri = f"mongodb+srv://{db_creds['username']}:{db_creds['password']}@{db_creds['host']}/?appName={db_creds['appName']}"
     client = pymongo.MongoClient(uri, server_api=ServerApi('1'))
     return client
 
