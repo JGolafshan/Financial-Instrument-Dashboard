@@ -6,14 +6,12 @@
     Author: Joshua David Golafshan
     Description: all individual stock (ticker relate functions)
 """
-import time
-from datetime import datetime
 
 import numpy as np
 import streamlit as st
 from src.utils import utils
-from src.utils.utils import set_page_state
 import plotly.graph_objs as go
+from src.utils.utils import set_page_state
 from src.components.heatmap_graph import plot_heatmap
 from src.core.black_scholes_model import BlackScholesModel
 
@@ -42,14 +40,11 @@ def display_instrument_metrics(stock_data):
         max_52_week_high = stock_data["High"].tail(252).max()
         min_52_week_low = stock_data["Low"].tail(252).min()
 
-    col0, col1, col2, col3, col4, col5 = st.columns([0.2, 0.1, 0.1, 0.1, 0.1, 0.1], )
+    col0, col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1, 1])
     with col0:
-        with st.container():
-            pass
-
+        st.metric("Market Open/Closed", f"{'TIme till Market Opens/CLoses'}")
     with col1:
-        pass
-
+        st.metric("Market Open/Closed", f"{'TIme till Market Opens/CLoses'}")
     with col2:
         st.metric("Close Price", f"${latest_close_price:.2f}")
     with col3:
