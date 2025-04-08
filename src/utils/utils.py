@@ -5,9 +5,11 @@
     Date: 03/04/2024
     Author: Joshua David Golafshan
 """
+
+from pymongo.errors import DuplicateKeyError
 from typing import Optional, Any
-import yfinance as yf
 import streamlit as st
+import yfinance as yf
 
 
 def search_logic(value: str):
@@ -62,3 +64,47 @@ def load_css(file_path: str) -> str:
         st.error(f"CSS file not found: {file_path}")
     except Exception as e:
         st.error(f"Error loading CSS file: {e}")
+
+
+# Function to insert a document into MongoDB
+def insert_document(user_id, datetime_custom, page_url, page_parameters, use_type):
+    """
+    Inserts a document into the MongoDB collection.
+    - Generates an ObjectId for the document.
+    - Adds timestamp information to the document.
+    """
+    db = st.session_state.db_client["user_history"]
+    collection = db["history"]
+
+    document = {
+        "user_id": user_id,
+        "datetime": datetime_custom,
+        "page_url": page_url,
+        "page_parameters": page_parameters,
+        "use_type": use_type
+    }
+
+    try:
+        # Insert the document into the collection
+        result = collection.insert_one(document)
+        st.success(f"Document inserted with ID: {result.inserted_id}")
+        return result.inserted_id
+
+    except DuplicateKeyError:
+        st.error(f"Document with user_id {user_id} already exists.")
+        return None
+    except Exception as e:
+        st.error(f"Error inserting document: {e}")
+        return None
+
+
+def get_total_documents():
+    # Connect to MongoDB collection
+    db = st.session_state.db_client["user_history"]
+    collection = db["history"]
+
+    # Get the total count of documents in the collection
+    total_documents = collection.count_documents({})
+    print(total_documents)
+
+    return total_documents
