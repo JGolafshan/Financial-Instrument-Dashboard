@@ -71,46 +71,71 @@
     gap: 10px;
 }
 
-/* Adjust the size and alignment of the CALL and PUT value containers */
+/* Table ToolBar */
+.stElementToolbar {
+    display: none;
+}
+
+/* Search Bar */
+
+
+
+
+/* Main container styling */
 .metric-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 8px; /* Adjust the padding to control height */
-    width: auto; /* Auto width for responsiveness, or set a fixed width if necessary */
-    margin: 0 auto; /* Center the container */
+    flex-direction: row;
+    width: 100%;
+    max-width: 800px; /* Ensure it's not too wide on large screens */
+    box-sizing: border-box;
 }
 
-/* Custom classes for CALL and PUT values */
+/* Common styles for both call and put metrics */
+.metric-call, .metric-put {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 10px;
+    border-radius: 12px; /* Rounded corners for a modern feel */
+    padding: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    width: 100%;
+    max-width: 800px;
+}
+
+/* Metric item (label + value) styling */
+.metric-item {
+    text-align: center;
+    flex: 1 1 100px; /* Allow items to shrink but not go below 120px */
+}
+
+/* Metric value styling */
+.metric-value {
+    font-size: 1.6rem; /* Larger font for value */
+    font-weight: 600; /* Semi-bold for emphasis */
+    color: white; /* Dark color for the values */
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+/* Metric label styling */
+.metric-label {
+    font-size: 1.1rem; /* Slightly larger label */
+    font-weight: 500; /* Medium weight for readability */
+    color: light-grey; /* Lighter color for labels */
+    margin-bottom: 10px;
+}
+
+/* Call and Put specific background colors */
 .metric-call {
-    background-color: green; /* Light green background */
-    color: black; /* Black font color */
-    margin-right: 10px; /* Spacing between CALL and PUT */
-    border-radius: 10px; /* Rounded corners */
+    background-color: green; /* Call: Green */
+    color: white; /* White text for better contrast */
 }
 
 .metric-put {
-    background-color: red; /* Light red background */
-    color: black; /* Black font color */
-    border-radius: 10px; /* Rounded corners */
-}
-
-/* Style for the value text */
-.metric-value {
-    font-size: 1.5rem; /* Adjust font size */
-    font-weight: bold;
-    margin: 0; /* Remove default margins */
-}
-
-/* Style for the label text */
-.metric-label {
-    font-size: 1rem; /* Adjust font size */
-    margin-bottom: 4px; /* Spacing between label and value */
-}
-
-
-
-/* Table ToolBar */
-.stElementToolbar {
-    display: none;
+    background-color: red; /* Put: Red */
+    color: white; /* White text for better contrast */
 }
