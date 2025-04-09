@@ -19,10 +19,10 @@ if "filter_search" not in st.session_state:
     st.session_state["filter_search"] = ""
 
 if "filter_exchange_name" not in st.session_state:
-    st.session_state["filter_exchange_name"] = ""
+    st.session_state["filter_exchange_name"] = "Select an Exchange Name"
 
 if "filter_exchange_symbol" not in st.session_state:
-    st.session_state["filter_exchange_symbol"] = ""
+    st.session_state["filter_exchange_symbol"] = "Select an Exchange Symbol"
 
 
 @st.cache_data(show_spinner="Loading ticker data")
@@ -51,10 +51,10 @@ def filter_data(df, search_query="", exchange_name_filter="", exchange_symbol_fi
         )
         df = df[matches]
 
-    if exchange_name_filter:
+    if exchange_name_filter and exchange_name_filter != "Select an Exchange Name":
         df = df[df["Exchange Name"] == exchange_name_filter]
 
-    if exchange_symbol_filter:
+    if exchange_symbol_filter and exchange_symbol_filter != "Select an Exchange Symbol":
         df = df[df["Exchange Symbol"] == exchange_symbol_filter]
 
     return df
@@ -86,7 +86,9 @@ with filter_column:
     st.subheader("Filter Options")
     exchange_names = raw_df["Exchange Name"].unique()
     exchange_symbols = raw_df["Exchange Symbol"].unique()
-    asset_types = ["Not Implemented"]  # Placeholder for future support
+
+    # Placeholder for future support
+    asset_types = ["Not Implemented"]
 
     # Clear filters
     if st.button("Clear All Filters"):
@@ -97,11 +99,11 @@ with filter_column:
         st.rerun()
 
     # Display Available Filters
-    st.selectbox(label="Exchange Name", placeholder="Select an Exchange Name",
-                 index=0, options=([""] + list(exchange_names)), key="filter_exchange_name")
+    st.selectbox(label="Exchange Name", placeholder="Select an Exchange Name", index=0,
+                 options=(["Select an Exchange Name"] + list(exchange_names)), key="filter_exchange_name")
 
-    st.selectbox(label="Exchange Symbol", placeholder="Select an Exchange Name",
-                 index=0, options=([""] + list(exchange_symbols)), key="filter_exchange_symbol")
+    st.selectbox(label="Exchange Symbol", placeholder="Select an Exchange Symbol", index=0,
+                 options=(["Select an Exchange Symbol"] + list(exchange_symbols)), key="filter_exchange_symbol")
 
     st.selectbox("Asset Type", placeholder="Select an Asset Type", options=asset_types, key="filter_asset_type")
 
