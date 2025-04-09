@@ -5,6 +5,7 @@
     Date: 03/04/2024
     Author: Joshua David Golafshan
 """
+import datetime
 
 from pymongo.errors import DuplicateKeyError
 from typing import Optional, Any
@@ -15,6 +16,9 @@ import yfinance as yf
 def search_logic(value: str):
     if value:
         st.session_state.code = value
+
+        insert_document(st.session_state.get("user_id"), datetime.datetime.now(), st.session_state["current_page"],
+                        [{"search_value": value}], "searched")
         st.session_state["current_page"] = "pages/instrument.py"
         st.switch_page("pages/instrument.py")
         st.experimental_rerun()  # Rerun to trigger page change
@@ -43,6 +47,8 @@ def set_page_state(page: str):
     """Set the current page in session state and navigate if needed."""
     if st.session_state.get("current_page") != page:
         st.session_state.current_page = page
+        user_id = st.session_state.get("user_id")
+        insert_document(user_id, datetime.datetime.now(), page, [], "viewed")
 
 
 def load_css(file_path: str) -> str:
@@ -87,7 +93,6 @@ def insert_document(user_id, datetime_custom, page_url, page_parameters, use_typ
     try:
         # Insert the document into the collection
         result = collection.insert_one(document)
-        st.success(f"Document inserted with ID: {result.inserted_id}")
         return result.inserted_id
 
     except DuplicateKeyError:

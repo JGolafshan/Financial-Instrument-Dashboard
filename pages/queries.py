@@ -8,10 +8,7 @@
 
 import pandas as pd
 import streamlit as st
-from datetime import datetime
-
-from src.utils.test import generate_random_document
-from src.utils.utils import set_page_state, insert_document, get_total_documents
+from src.utils.utils import set_page_state, get_total_documents
 
 set_page_state("pages/queries.py")
 st.title("User Activity")
@@ -24,6 +21,7 @@ def get_data(size: int, page: int):
     Fetches data from MongoDB, returns a batch of records based on page size.
     """
     db = st.session_state.db_client["user_history"]
+    st.cache_data.clear()
     collection = db["history"]
 
     skip = size * (page - 1)
@@ -43,15 +41,6 @@ def get_data(size: int, page: int):
                            }, inplace=True)
 
     return raw_df
-
-
-if st.button("Add to db"):
-    test = generate_random_document()
-    insert_document(**test)
-    st.cache_data.clear()  # Invalidate cached data
-
-    # Optionally, re-fetch the data to display updated information
-    get_data(size=25, page=1)  # Adjust size/page as needed
 
 
 # --- Filter Function ---
