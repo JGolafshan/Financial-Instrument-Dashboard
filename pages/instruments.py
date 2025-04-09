@@ -18,6 +18,12 @@ set_page_state("pages/instruments.py")
 if "filter_search" not in st.session_state:
     st.session_state["filter_search"] = ""
 
+if "filter_exchange_name" not in st.session_state:
+    st.session_state["filter_exchange_name"] = ""
+
+if "filter_exchange_symbol" not in st.session_state:
+    st.session_state["filter_exchange_symbol"] = ""
+
 
 @st.cache_data(show_spinner="Loading ticker data")
 def load_clean_ticker_data():
@@ -63,7 +69,8 @@ dataframe_column, filter_column = st.columns((9, 2))
 # Main table display
 with dataframe_column:
     col1, col2 = st.columns([0.25, 0.75])
-    col1.text_input("Search (Ticker, Company, Exchange)", value=st.session_state.get("filter_search", ""), key="filter_search")
+    col1.text_input("Search (Ticker, Company, Exchange)", value=st.session_state.get("filter_search", ""),
+                    key="filter_search")
 
     raw_df = load_clean_ticker_data()
     filtered_df = filter_data(
@@ -91,12 +98,11 @@ with filter_column:
 
     # Display Available Filters
     st.selectbox(label="Exchange Name", placeholder="Select an Exchange Name",
-                 index=0, options=([""]+list(exchange_names)), key="filter_exchange_name")
+                 index=0, options=([""] + list(exchange_names)), key="filter_exchange_name")
 
     st.selectbox(label="Exchange Symbol", placeholder="Select an Exchange Name",
-                 index=0, options=([""]+list(exchange_symbols)), key="filter_exchange_symbol")
+                 index=0, options=([""] + list(exchange_symbols)), key="filter_exchange_symbol")
 
     st.selectbox("Asset Type", placeholder="Select an Asset Type", options=asset_types, key="filter_asset_type")
 
 st.markdown(f"Showing **{len(filtered_df)}** out of **{len(raw_df)}** entries")
-
