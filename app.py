@@ -41,11 +41,10 @@ utils.user_component()
 pages = [
     st.Page("pages/home.py", title="Landing Page", icon=":material/show_chart:"),
     st.Page("pages/instrument.py", title="Instrument", icon=":material/show_chart:", url_path="/instrument"),
+    st.Page("pages/instruments.py", title="Instruments", icon=":material/show_chart:", url_path="/instruments"),
     st.Page("pages/queries.py", title="Historical Queries", icon=":material/show_chart:", url_path="/history"),
     st.Page("pages/search.py", title="Instrument Query", icon=":material/show_chart:", url_path="/search"),
 ]
-
-error_page = st.Page("pages/error_page.py", title="Error", icon=":material/show_chart:", url_path="error")
 
 pg = st.navigation(pages, expanded=True)
 sidebar.sidebar()

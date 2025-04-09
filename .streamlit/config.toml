@@ -3,3 +3,6 @@ showSidebarNavigation = false
 
 [theme]
 base = "dark"
+
+[server]
+enableStaticServing = true
