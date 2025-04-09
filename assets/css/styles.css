@@ -44,15 +44,6 @@
     color: inherit;
 }
 
-/* Search bar Page */
-.center-column {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 22vh;  /* Full viewport height */
-    max-width: 600px;
-}
 
 
 /* User ID Component */
