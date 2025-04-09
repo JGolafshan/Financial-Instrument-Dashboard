@@ -69,8 +69,8 @@ dataframe_column, filter_column = st.columns((9, 2))
 # Main table display
 with dataframe_column:
     col1, col2 = st.columns([0.25, 0.75])
-    col1.text_input("Search (Ticker, Company, Exchange)", value=st.session_state.get("filter_search", ""),
-                    key="filter_search")
+    col1.text_input(label="Search (Ticker, Company, Exchange)", value=st.session_state.get("filter_search", ""),
+                    key="filter_search", placeholder="Search Instruments")
 
     raw_df = load_clean_ticker_data()
     filtered_df = filter_data(
@@ -79,7 +79,7 @@ with dataframe_column:
         st.session_state.get("filter_exchange_name", ""),
         st.session_state.get("filter_exchange_symbol", "")
     )
-    st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+    pagination = st.container()
 
 # Filter sidebar
 with filter_column:
@@ -108,3 +108,10 @@ with filter_column:
     st.selectbox("Asset Type", placeholder="Select an Asset Type", options=asset_types, key="filter_asset_type")
 
 st.markdown(f"Showing **{len(filtered_df)}** out of **{len(raw_df)}** entries")
+
+# --- Display Data ---
+if filtered_df.empty:
+    pagination.warning("No rows found matching filtering criteria.")
+
+else:
+    pagination.dataframe(filtered_df, use_container_width=True, hide_index=True)
