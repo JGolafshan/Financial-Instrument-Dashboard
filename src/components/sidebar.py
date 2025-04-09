@@ -22,8 +22,7 @@ def search_bar_sidebar():
     with st.sidebar.container(key="search_bar_container"):
         search_columns = st.sidebar.columns([0.8, 0.2])
         with search_columns[0]:
-            search_query = st.sidebar.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL",
-                                                 key="small_search")
+            search_query = st.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL", key="small_search")
 
         with search_columns[1]:
             if st.button("🔍", use_container_width=True):
