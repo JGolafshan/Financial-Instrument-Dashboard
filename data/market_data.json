@@ -1,0 +1,105 @@
+{
+  "ASX": {
+    "full_name": "Australian Securities Exchange",
+    "type": "Stock Exchange",
+    "website": "https://www.asx.com.au",
+    "currency": "AUD",
+    "location": {
+      "country": "Australia",
+      "state": "New South Wales",
+      "city": "Sydney",
+      "timezone": "Australia/Sydney",
+      "timezone_offset": "+10:00"
+    },
+    "trading_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "trading_hours": {
+      "pre_open": { "start": "07:00", "end": "10:00" },
+      "regular": { "start": "10:00", "end": "16:00" },
+      "after_hours": { "start": "16:00", "end": "19:00" }
+    },
+    "holidays": [
+      { "date": "2025-01-01", "name": "New Year's Day", "observed": true },
+      { "date": "2025-01-27", "name": "Australia Day", "observed": true },
+      { "date": "2025-04-18", "name": "Good Friday", "observed": true },
+      { "date": "2025-04-21", "name": "Easter Monday", "observed": true },
+      { "date": "2025-04-25", "name": "Anzac Day", "observed": true },
+      { "date": "2025-06-09", "name": "King's Birthday", "observed": true },
+      { "date": "2025-12-25", "name": "Christmas Day", "observed": true },
+      { "date": "2025-12-26", "name": "Boxing Day", "observed": true }
+    ],
+    "special_hours": [
+      { "date": "2025-12-24", "reason": "Christmas Eve", "close": "14:00" },
+      { "date": "2025-12-31", "reason": "New Year's Eve", "close": "14:00" }
+    ],
+    "supports_extended_hours": true,
+    "is_active": true,
+    "notes": "Pre-open allows orders; no matching until 10:00 AM. No official after-hours session."
+  },
+  "LSE": {
+    "full_name": "London Stock Exchange",
+    "type": "Stock Exchange",
+    "website": "https://www.londonstockexchange.com",
+    "currency": "GBP",
+    "location": {
+      "country": "United Kingdom",
+      "state": "",
+      "city": "London",
+      "timezone": "Europe/London",
+      "timezone_offset": "+01:00"
+    },
+    "trading_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "trading_hours": {
+      "regular": { "open": "08:00", "close": "16:30" }
+    },
+    "holidays": [
+      { "date": "2025-01-01", "name": "New Year's Day", "observed": true },
+      { "date": "2025-04-18", "name": "Good Friday", "observed": true },
+      { "date": "2025-04-21", "name": "Easter Monday", "observed": true },
+      { "date": "2025-05-05", "name": "Early May Bank Holiday", "observed": true },
+      { "date": "2025-05-26", "name": "Spring Bank Holiday", "observed": true }
+    ],
+    "special_hours": [],
+    "supports_extended_hours": false,
+    "is_active": true,
+    "notes": ""
+  },
+  "NYSE": {
+    "full_name": "New York Stock Exchange",
+    "type": "Stock Exchange",
+    "website": "https://www.nyse.com",
+    "currency": "USD",
+    "location": {
+      "country": "United States",
+      "state": "New York",
+      "city": "New York",
+      "timezone": "America/New_York",
+      "timezone_offset": "-04:00"
+    },
+    "trading_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "trading_hours": {
+      "regular": { "open": "09:30", "close": "16:00" },
+      "pre_market": { "open": "04:00", "close": "09:30" },
+      "after_hours": { "open": "16:00", "close": "20:00" }
+    },
+    "holidays": [
+      { "date": "2025-01-01", "name": "New Year's Day", "observed": true },
+      { "date": "2025-01-20", "name": "Martin Luther King, Jr. Day", "observed": true },
+      { "date": "2025-02-17", "name": "Washington's Birthday", "observed": true },
+      { "date": "2025-04-18", "name": "Good Friday", "observed": true },
+      { "date": "2025-05-26", "name": "Memorial Day", "observed": true },
+      { "date": "2025-06-19", "name": "Juneteenth", "observed": true },
+      { "date": "2025-07-04", "name": "Independence Day", "observed": true },
+      { "date": "2025-09-01", "name": "Labor Day", "observed": true },
+      { "date": "2025-11-27", "name": "Thanksgiving Day", "observed": true },
+      { "date": "2025-12-25", "name": "Christmas Day", "observed": true }
+    ],
+    "special_hours": [
+      { "date": "2025-07-03", "reason": "Day Before Independence Day", "close": "13:00" },
+      { "date": "2025-11-28", "reason": "Day After Thanksgiving", "close": "13:00" },
+      { "date": "2025-12-24", "reason": "Christmas Eve", "close": "13:00" }
+    ],
+    "supports_extended_hours": true,
+    "is_active": true,
+    "notes": ""
+  }
+}
