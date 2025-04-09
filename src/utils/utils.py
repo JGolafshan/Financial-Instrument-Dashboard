@@ -6,11 +6,10 @@
     Author: Joshua David Golafshan
 """
 import datetime
-
-from pymongo.errors import DuplicateKeyError
-from typing import Optional, Any
-import streamlit as st
 import yfinance as yf
+import streamlit as st
+from typing import Optional, Any
+from pymongo.errors import DuplicateKeyError
 
 
 def search_logic(value: str):
