@@ -27,12 +27,15 @@ def get_data(size: int, page: int):
     skip = size * (page - 1)
     cursor = collection.find().skip(skip).limit(size)
     items = list(cursor)
+    print(items)
 
     # Convert ObjectId to str for caching and display
     for item in items:
         item["_id"] = str(item["_id"])
 
     raw_df = pd.DataFrame(items)
+    raw_df = raw_df.drop(columns=['_id'], errors='ignore')
+
     raw_df.rename(columns={'user_id': 'User ID',
                            'datetime': 'DateTime',
                            "page_url": "Page URL",
@@ -57,11 +60,13 @@ def filter_data(search_query="", user_id_filter="", date_filter=None, size=10, p
 
         # Make columns str's
         df["User ID"] = df["User ID"].astype(str)
-        df["DateTime"] = df["DateTime"].astype(str)
+        df["Page URL"] = df["Page URL"].astype(str)
+        df["Type"] = df["Type"].astype(str)
 
         user_id = df["User ID"].str.lower().str.contains(query, na=False)
-        datetime_col = df["DateTime"].str.lower().str.contains(query, na=False)
-        df = df[user_id | datetime_col]
+        page_url = df["Page URL"].str.lower().str.contains(query, na=False)
+        type = df["Type"].str.lower().str.contains(query, na=False)
+        df = df[user_id | page_url | type]
 
     # --- User ID filter ---
     if user_id_filter and user_id_filter.strip():
@@ -107,7 +112,7 @@ with side_menu[0]:
         user_id_filter=st.session_state.get("filter_user_id", ""),
         date_filter=st.session_state.get("filter_date", None),
         size=batch_size,
-        page=1  # Adjust this to allow pagination dynamically
+        page=st.session_state.get("page_number", 1) # Adjust this to allow pagination dynamically
     )
 
     # --- Pagination Setup ---
@@ -118,7 +123,7 @@ with side_menu[0]:
     bottom_menu = st.columns((7, 4, 1))
 
     with bottom_menu[2]:
-        current_page = st.number_input("Page", min_value=1, max_value=total_pages, step=1, value=1)
+        current_page = st.number_input("Page", min_value=1, max_value=total_pages, step=1, value=1, key="page_number")
 
     with bottom_menu[0]:
         start_idx = (current_page - 1) * batch_size
@@ -129,7 +134,4 @@ with side_menu[0]:
     if filtered_df.empty:
         pagination.warning("No rows found matching filtering criteria.")
     else:
-        # Directly display the data for the selected page and batch size
-        start_idx = (current_page - 1) * batch_size
-        end_idx = min(start_idx + batch_size, total_entries)
-        pagination.dataframe(filtered_df.iloc[start_idx:end_idx], use_container_width=True)
+        pagination.dataframe(filtered_df, use_container_width=True, hide_index=True)
