@@ -19,15 +19,21 @@ def sidebar():
 
 
 def search_bar_sidebar():
-    with st.sidebar.container(key="search_bar_container"):
-        search_columns = st.sidebar.columns([0.8, 0.2])
-        with search_columns[0]:
-            search_query = st.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL", key="small_search")
+    with st.sidebar.form('search_bar_container', border=False, clear_on_submit=True):
+        col1, col2, empty = st.columns([0.6, 0.1, 0.1])
 
-        with search_columns[1]:
-            if st.button("🔍", use_container_width=True):
-                if search_query:
-                    search_logic(search_query)
+        with col1:
+            search_query = st.text_input(
+                label="Search For a Ticker/Symbol:",
+                placeholder="e.g. AAPL",
+                label_visibility='collapsed',
+                key="small_search"
+            )
+        with col2:
+            submitted = st.form_submit_button('🔍')
+
+        if search_query and submitted:
+            search_logic(search_query)
 
 
 def add_navigation_links():
