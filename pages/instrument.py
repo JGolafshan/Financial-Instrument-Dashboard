@@ -171,7 +171,7 @@ def show_monte_carlo_page():
 
     mc_sim = MonteCarloSimulation(get_instrument_data(instrument_code)["history"], look_forward, number_of_simulations)
     mc_sim.simulate()
-    st.line_chart(mc_sim.get_simulation_results())
+    st.line_chart(mc_sim.get_simulation_results(), use_container_width=True)
 
 
 def show_info():
