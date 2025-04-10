@@ -103,7 +103,7 @@ with dataframe_column:
     # Search Box
     search_box_input = search_input_container.text_input(label="Search Recent Activity",
                                                          value=st.session_state.get("filter_search", ""),
-                                                         key="filter_search", placeholder="Search Instruments")
+                                                         key="filter_search", placeholder="Search Recent User Actives")
 
     # Page Size
     batch_size = page_size_container.selectbox("Page Size", options=[25, 50, 100], index=0)
