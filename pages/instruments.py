@@ -90,11 +90,11 @@ with filter_column:
     asset_types = ["Select an Asset Type", "Not Implemented"]
 
     with st.form(key="filter_form", border=False):
-        st.selectbox(label="Exchange Name", options=(["Select an Exchange Name"] + exchange_names),
+        st.selectbox(label="Filter by Exchange Name", options=(["Select an Exchange Name"] + exchange_names),
                      key="filter_exchange_name")
-        st.selectbox(label="Exchange Symbol", options=["Select an Exchange Symbol"] + exchange_symbols,
+        st.selectbox(label="Filter by Exchange Symbol", options=["Select an Exchange Symbol"] + exchange_symbols,
                      key="filter_exchange_symbol")
-        st.selectbox("Asset Type", placeholder="Select an Asset Type", options=asset_types, key="filter_asset_type")
+        st.selectbox("Filter by Asset Type", placeholder="Select an Asset Type", options=asset_types, key="filter_asset_type")
 
         # Clear filters
         clear, apply = st.columns(2)
