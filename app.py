@@ -19,7 +19,6 @@ with st.empty():
     def get_cookie_manager():
         return stx.CookieManager()
 
-
     cookie_manager = get_cookie_manager()
     user_id = cookie_manager.get("user_id") or str(uuid.uuid4())
     cookie_manager.set("user_id", user_id)
@@ -45,6 +44,8 @@ def get_pages():
 
 
 st.session_state["db_client"] = get_db_connection()
+
+# TODO Makes these cached / resource since its loaded everytime...
 st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
 utils.user_component()
 
