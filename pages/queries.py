@@ -127,8 +127,7 @@ def main():
 
         bottom_menu = st.columns((7, 4, 2))
         with bottom_menu[2]:
-            current_page = st.number_input("Page Number", min_value=1, max_value=total_pages, step=1, value=1,
-                                           key="page_number")
+            current_page = st.number_input("Page Number", min_value=1, max_value=total_pages, step=1, key="page_number")
 
         with bottom_menu[0]:
             start_idx = (current_page - 1) * batch_size
