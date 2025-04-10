@@ -55,7 +55,7 @@ def main():
     btn1, btn2, empty2 = st.columns([0.15, 0.15, 0.7])
 
     if btn1.button("Search Instruments"):
-        st.switch_page("pages/queries.py")
+        st.switch_page("pages/search.py")
 
     if btn2.button("View User Activity"):
         st.switch_page("pages/queries.py")
