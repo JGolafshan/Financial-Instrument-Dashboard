@@ -147,8 +147,6 @@ def show_bs_model():
         vol_max = c1.slider('Max Volatility', 0.01, 1.0, value=volatility * 1.5, step=0.01)
         spot_min = c2.number_input('Min Spot Price', 0.01, value=current_price * 0.8, step=0.01)
         spot_max = c2.number_input('Max Spot Price', 0.01, value=current_price * 1.2, step=0.01)
-
-        # Generate this in function
         spot_range = np.linspace(spot_min, spot_max, 10)
         vol_range = np.linspace(vol_min, vol_max, 10)
 
@@ -200,7 +198,8 @@ def show_info():
         show_monte_carlo_page()
 
 
-if instrument_code and instrument_code != "NONE":
-    show_info()
-else:
-    st.switch_page("pages/search.py")
+if __name__ == "__main__":
+    if instrument_code and instrument_code != "NONE":
+        show_info()
+    else:
+        st.switch_page("pages/search.py")

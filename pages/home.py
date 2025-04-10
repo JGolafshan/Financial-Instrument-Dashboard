@@ -11,9 +11,6 @@ import streamlit as st
 import yfinance as yf
 from src.utils.utils import set_page_state
 
-# Load Components
-set_page_state("pages/home.py")
-
 
 @st.cache_data(show_spinner="Loading Stock Screener")
 def get_data():
@@ -42,35 +39,41 @@ def display_trending_items(screen_data, columns):
 
 
 # Home page description
+def main():
+    set_page_state("pages/home.py")
 
-st.title("Welcome to the Stock Dashboard")
-st.markdown("""
-    **A comprehensive platform for tracking, analyzing, and exploring financial market data. 
-    Utilize interactive tools and advanced analytics to support your investment decisions.**""")
+    st.title("Welcome to the Stock Dashboard")
+    st.markdown("""
+        **A comprehensive platform for tracking, analyzing, and exploring financial market data. 
+        Utilize interactive tools and advanced analytics to support your investment decisions.**""")
 
-st.markdown("""
-    Search for stocks with interactive charts, financial metrics, and option pricing tools. 
-    Or review user-generated queries with filters for user ID, date, and original parameters.
-    """)
+    st.markdown("""
+        Search for stocks with interactive charts, financial metrics, and option pricing tools. 
+        Or review user-generated queries with filters for user ID, date, and original parameters.
+        """)
 
-btn1, btn2, empty2 = st.columns([0.15, 0.15, 0.7])
+    btn1, btn2, empty2 = st.columns([0.15, 0.15, 0.7])
 
-if btn1.button("Search Instruments"):
-    st.switch_page("pages/queries.py")
+    if btn1.button("Search Instruments"):
+        st.switch_page("pages/queries.py")
 
-if btn2.button("View User Activity"):
-    st.switch_page("pages/queries.py")
+    if btn2.button("View User Activity"):
+        st.switch_page("pages/queries.py")
 
-st.markdown("---")
+    st.markdown("---")
 
-# Trending Stock w/ Links
+    # Trending Stock w/ Links
 
-gainers, losers = get_data()
+    gainers, losers = get_data()
 
-st.subheader("Top performing stocks today")
-display_trending_items(gainers, st.columns(5))
+    st.subheader("Top performing stocks today")
+    display_trending_items(gainers, st.columns(5))
 
-st.subheader("Top underperforming stocks today")
-display_trending_items(losers, st.columns(5))
+    st.subheader("Top underperforming stocks today")
+    display_trending_items(losers, st.columns(5))
 
-st.markdown("---")
+    st.markdown("---")
+
+
+if __name__ == "__main__":
+    main()
