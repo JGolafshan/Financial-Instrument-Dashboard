@@ -223,6 +223,4 @@ def show_info():
 if instrument_code and instrument_code != "NONE":
     show_info()
 else:
-    st.warning(f"Instrument {instrument_code} not found. Redirecting...")
-    time.sleep(2)
     st.switch_page("pages/search.py")

@@ -7,33 +7,16 @@
 """
 
 import streamlit as st
-from src.utils.utils import search_logic
+from src.components.custom_searchbar import custom_search_bar
 
 
 def sidebar():
     st.sidebar.title("📊 Stock Dashboard")
 
-    search_bar_sidebar()
+    with st.sidebar:
+        custom_search_bar("search_bar_container", "small_search", [0.8, 0.1, 0.1])
     add_navigation_links()
     author_details()
-
-
-def search_bar_sidebar():
-    with st.sidebar.form('search_bar_container', border=False, clear_on_submit=True):
-        col1, col2, empty = st.columns([0.6, 0.1, 0.1])
-
-        with col1:
-            search_query = st.text_input(
-                label="Search For a Ticker/Symbol:",
-                placeholder="e.g. AAPL TSLA",
-                label_visibility='collapsed',
-                key="small_search"
-            )
-        with col2:
-            submitted = st.form_submit_button('🔍')
-
-        if search_query and submitted:
-            search_logic(search_query)
 
 
 def add_navigation_links():
