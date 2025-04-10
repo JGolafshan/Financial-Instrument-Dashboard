@@ -25,7 +25,7 @@ def search_bar_sidebar():
         with col1:
             search_query = st.text_input(
                 label="Search For a Ticker/Symbol:",
-                placeholder="e.g. AAPL",
+                placeholder="e.g. AAPL TSLA",
                 label_visibility='collapsed',
                 key="small_search"
             )

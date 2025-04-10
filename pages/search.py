@@ -14,19 +14,25 @@ from src.utils.utils import set_page_state, search_logic
 # Load Components
 set_page_state("pages/search.py")
 
-
-# A page that just contains a search bar with text
 with st.container(key="search_page_container"):
-    st.markdown('<div class="center-column" style="max-width: 700px; align-items:basline">', unsafe_allow_html=True)
-    st.header("Query an Instrument")
+    column_padding_empty1, content, column_padding_empty2 = st.columns([0.1, 0.8, 0.1])
 
-    with st.container(key="side_bar_search_bar"):
-        search_columns = st.columns([0.9, 0.2])
-        with search_columns[0]:
-            search_query = st.text_input("Search For a Ticker/Symbol:", "", placeholder="AAPL", key="big_search")
+    with content:
+        content.header("Search for Instruments")
+        content.markdown("#### Search over 54,000 Instruments available")
 
-        with search_columns[1]:
-            if st.button("🔍", use_container_width=True):
-                if search_query:
-                    search_logic(search_query)
-    st.markdown('</div>', unsafe_allow_html=True)
+        with st.form('form_container', border=False, clear_on_submit=True):
+            col1, col2 = st.columns([0.95, 0.05])
+
+            with col1:
+                search_query = st.text_input(
+                    label="Search For a Ticker/Symbol:",
+                    placeholder="e.g. AAPL, TSLA",
+                    label_visibility='collapsed',
+                    key="big_search"
+                )
+            with col2:
+                submitted = st.form_submit_button('🔍')
+
+            if search_query and submitted:
+                search_logic(search_query)

@@ -20,7 +20,6 @@ def search_logic(value: str):
                         [{"search_value": value}], "searched")
         st.session_state["current_page"] = "pages/instrument.py"
         st.switch_page("pages/instrument.py")
-        st.experimental_rerun()  # Rerun to trigger page change
 
 
 def yahoo_data(ticker: str) -> Optional[Any]:
@@ -100,15 +99,3 @@ def insert_document(user_id, datetime_custom, page_url, page_parameters, use_typ
     except Exception as e:
         st.error(f"Error inserting document: {e}")
         return None
-
-
-def get_total_documents():
-    # Connect to MongoDB collection
-    db = st.session_state.db_client["user_history"]
-    collection = db["history"]
-
-    # Get the total count of documents in the collection
-    total_documents = collection.count_documents({})
-    print(total_documents)
-
-    return total_documents
