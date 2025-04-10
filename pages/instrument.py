@@ -163,9 +163,9 @@ def plot_historical_chart(stock_data):
 def show_monte_carlo_page():
     st.subheader("📈 Monte Carlo Simulation ")
     with st.expander("⚙️ Settings", expanded=False):
-        number_of_simulations = st.number_input('Number of Simulations', min_value=1, value=30, step=5)
-        look_back = st.number_input('Look Back Period', min_value=1, value=30, step=5)
-        look_forward = st.number_input('Look Forward Period', 1, value=30, step=5)
+        number_of_simulations = st.number_input('Number of Simulations', min_value=1, value=30, step=10, max_value=300)
+        look_back = st.number_input('Look Back Period', min_value=1, value=30, step=5, max_value=100)
+        look_forward = st.number_input('Look Forward Period', min_value=1, value=30, step=30, max_value=365*3)
 
     mc_sim = MonteCarloSimulation(get_instrument_data(instrument_code)["history"], look_forward, number_of_simulations)
     mc_sim.simulate()
