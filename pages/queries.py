@@ -139,7 +139,7 @@ with dataframe_column:
 with filter_column:
     st.subheader("Filter Options")
     with st.form(key="filter_form", border=False):
-        st.text_input("Filter by User ID", key="filter_user_id", placeholder="e.g., c3b831ed-979d...-...")
+        st.text_input("Filter by User ID", key="filter_user_id", placeholder="e.g., c3b831ed-979d...")
         st.selectbox("Filter by Page URL", options=static_page_names, key="filter_page_url")
         st.selectbox("Filter by Page Type", options=static_page_types, key="filter_type")
         st.date_input("Filter by Date", format="YYYY-MM-DD", key="filter_date")
