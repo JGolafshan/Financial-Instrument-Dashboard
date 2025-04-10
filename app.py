@@ -19,8 +19,8 @@ with st.empty():
 
     # If no user_id exists, generate and store one
     if user_id is None:
-        user_id = str(uuid.uuid4())  # Generate a new UUID
-        cookie_manager.set("user_id", user_id)  # Persist in cookies
+        user_id = str(uuid.uuid4())
+        cookie_manager.set("user_id", user_id)
     st.session_state["user_id"] = user_id
 
 

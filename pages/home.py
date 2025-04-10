@@ -26,6 +26,8 @@ def get_data():
     return best_gainers, worst_losers
 
 
+# Home page description
+
 st.title("Welcome to the Stock Dashboard")
 st.markdown("""
     **A comprehensive platform for tracking, analyzing, and exploring financial market data. 
@@ -44,12 +46,16 @@ if btn1.button("Search Instruments"):
 if btn2.button("View User Activity"):
     st.switch_page("pages/queries.py")
 
-gainers, losers = get_data()
-
 st.markdown("---")
 
-st.subheader("Top performing stocks today")
+
+# Trending Stock w/ Links
+
+gainers, losers = get_data()
 gainer_cols = st.columns(5)
+loser_cols = st.columns(5)
+
+st.subheader("Top performing stocks today")
 for i, quote in enumerate(gainers["quotes"][:5]):
     with gainer_cols[i]:
         st.metric(
@@ -59,7 +65,6 @@ for i, quote in enumerate(gainers["quotes"][:5]):
         )
 
 st.subheader("Top underperforming stocks today")
-loser_cols = st.columns(5)
 for i, quote in enumerate(losers["quotes"][:5]):
     with loser_cols[i]:
         st.metric(

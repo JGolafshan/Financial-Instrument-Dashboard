@@ -34,7 +34,7 @@ def get_data(size: int, page: int, query: dict = None):
     """
     Fetches filtered data from MongoDB, returns a batch of records based on page size.
     """
-    st.cache_data.clear()  # Optional: clears previous cached data
+    st.cache_data.clear()
     db = st.session_state.db_client["user_history"]
     collection = db["history"]
 
@@ -45,7 +45,6 @@ def get_data(size: int, page: int, query: dict = None):
     cursor = collection.find(query).sort("datetime", -1).skip(skip).limit(size)
     items = list(cursor)
 
-    # Convert ObjectId to str for caching and display
     for item in items:
         item["_id"] = str(item["_id"])
 
