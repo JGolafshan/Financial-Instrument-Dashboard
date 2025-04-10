@@ -14,15 +14,19 @@ import orjson
 
 # Set the Streamlit page state and title
 set_page_state("pages/instruments.py")
+st.title("Instrument Directory")
+st.markdown("""Explore and filter available financial instruments on this website.
+               Use the options on the right to filter different categorical variables.""")
 
-if "filter_search" not in st.session_state:
-    st.session_state["filter_search"] = ""
-
-if "filter_exchange_name" not in st.session_state:
-    st.session_state["filter_exchange_name"] = "Select an Exchange Name"
-
-if "filter_exchange_symbol" not in st.session_state:
-    st.session_state["filter_exchange_symbol"] = "Select an Exchange Symbol"
+# --- Initialize Session State Filters ---
+default_filters = {
+    "filter_search": "",
+    "filter_exchange_name": "Select an Exchange Name",
+    "filter_exchange_symbol": "Select an Exchange Symbol",
+    "filter_asset_type": "Select an Asset Type",
+}
+for key, val in default_filters.items():
+    st.session_state.setdefault(key, val)
 
 
 @st.cache_data(show_spinner="Loading ticker data")
@@ -60,10 +64,6 @@ def filter_data(df, search_query="", exchange_name_filter="", exchange_symbol_fi
     return df
 
 
-st.title("Instrument Directory")
-st.markdown("""Explore and filter available financial instruments on this website.
-               Use the options on the right to filter different categorical variables.""")
-
 dataframe_column, filter_column = st.columns((9, 2))
 
 # Main table display
@@ -84,28 +84,27 @@ with dataframe_column:
 # Filter sidebar
 with filter_column:
     st.subheader("Filter Options")
-    exchange_names = raw_df["Exchange Name"].unique()
-    exchange_symbols = raw_df["Exchange Symbol"].unique()
+    exchange_names = sorted(raw_df["Exchange Name"].dropna().unique().tolist())
+    exchange_symbols = sorted(raw_df["Exchange Symbol"].dropna().unique().tolist())
+    asset_types = ["Select an Asset Type", "Not Implemented"]
 
-    # Placeholder for future support
-    asset_types = ["Not Implemented"]
+    with st.form(key="filter_form", border=False):
+        st.selectbox(label="Exchange Name", options=(["Select an Exchange Name"] + exchange_names),
+                     key="filter_exchange_name")
+        st.selectbox(label="Exchange Symbol", options=["Select an Exchange Symbol"] + exchange_symbols,
+                     key="filter_exchange_symbol")
+        st.selectbox("Asset Type", placeholder="Select an Asset Type", options=asset_types, key="filter_asset_type")
 
-    # Clear filters
-    if st.button("Clear All Filters"):
-        st.session_state.pop("filter_exchange_name")
-        st.session_state.pop("filter_exchange_symbol")
-        st.session_state.pop("filter_asset_type")
-        st.session_state.pop("filter_search")
-        st.rerun()
+        # Clear filters
+        clear, apply = st.columns(2)
+        with clear:
+            if st.form_submit_button("Clear Filters"):
+                for key in default_filters:
+                    st.session_state.pop(key)
+                st.rerun()
 
-    # Display Available Filters
-    st.selectbox(label="Exchange Name", placeholder="Select an Exchange Name", index=0,
-                 options=(["Select an Exchange Name"] + list(exchange_names)), key="filter_exchange_name")
-
-    st.selectbox(label="Exchange Symbol", placeholder="Select an Exchange Symbol", index=0,
-                 options=(["Select an Exchange Symbol"] + list(exchange_symbols)), key="filter_exchange_symbol")
-
-    st.selectbox("Asset Type", placeholder="Select an Asset Type", options=asset_types, key="filter_asset_type")
+        with apply:
+            st.form_submit_button("Apply Filters")
 
 st.markdown(f"Showing **{len(filtered_df)}** out of **{len(raw_df)}** entries")
 
