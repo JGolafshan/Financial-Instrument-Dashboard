@@ -6,17 +6,15 @@
     Author: Joshua David Golafshan
     Description: all individual stock (ticker relate functions)
 """
-import pprint
-import time
 import orjson
 import datetime
 import numpy as np
 import streamlit as st
 from zoneinfo import ZoneInfo
-import plotly.graph_objs as go
 from src.utils.utils import set_page_state, yahoo_data
 from streamlit_javascript import st_javascript
 from src.components.custom_metric import option_metric
+from src.components.historial_chart import historical_chart
 from src.components.heatmap_graph import plot_heatmap
 from src.core.black_scholes_model import BlackScholesModel
 from src.core.monte_carlo_simulation import MonteCarloSimulation
@@ -161,24 +159,7 @@ def show_bs_model():
 
 
 def plot_historical_chart(stock_data):
-    # TODO: Make this into .py
-    candlestick_chart = go.Figure(data=[
-        go.Candlestick(x=stock_data.index, open=stock_data['Open'], high=stock_data['High'],
-                       low=stock_data['Low'], close=stock_data['Close'])])
-    candlestick_chart.update_xaxes(
-        rangeslider_visible=True,
-        rangeselector=dict(
-            buttons=list([
-                dict(count=1, label="1m", step="month", stepmode="backward"),
-                dict(count=6, label="6m", step="month", stepmode="backward"),
-                dict(count=1, label="YTD", step="year", stepmode="todate"),
-                dict(count=1, label="1y", step="year", stepmode="backward"),
-                dict(step="all")
-            ])
-        )
-    )
-    candlestick_chart.update_layout(xaxis_rangeslider_visible=False)
-    st.plotly_chart(candlestick_chart, use_container_width=True)
+    st.plotly_chart(historical_chart(stock_data), use_container_width=True)
 
 
 def show_monte_carlo_page():
@@ -200,7 +181,6 @@ def show_info():
         return
 
     stock_info = instrument_data["info"]
-    pprint.pprint(stock_info)
     stock_data = instrument_data["history"]
 
     display_instrument(stock_info)
