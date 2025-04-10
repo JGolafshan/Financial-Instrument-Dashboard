@@ -26,6 +26,21 @@ def get_data():
     return best_gainers, worst_losers
 
 
+def display_trending_items(screen_data, columns):
+    for i, quote in enumerate(screen_data["quotes"][:5]):
+        with columns[i]:
+            try:
+                company_name = quote['longName']
+            except KeyError:
+                company_name = quote['displayName']
+
+            st.metric(
+                label=f"{company_name} ({quote['symbol']})",
+                value=f"${quote['regularMarketPrice']:.2f}",
+                delta=f"{quote['regularMarketChangePercent']:.2f}%",
+            )
+
+
 # Home page description
 
 st.title("Welcome to the Stock Dashboard")
@@ -48,29 +63,14 @@ if btn2.button("View User Activity"):
 
 st.markdown("---")
 
-
 # Trending Stock w/ Links
 
 gainers, losers = get_data()
-gainer_cols = st.columns(5)
-loser_cols = st.columns(5)
 
 st.subheader("Top performing stocks today")
-for i, quote in enumerate(gainers["quotes"][:5]):
-    with gainer_cols[i]:
-        st.metric(
-            label=f"{quote['longName']} ({quote['symbol']})",
-            value=f"${quote['regularMarketPrice']:.2f}",
-            delta=f"{quote['regularMarketChangePercent']:.2f}%"
-        )
+display_trending_items(gainers, st.columns(5))
 
 st.subheader("Top underperforming stocks today")
-for i, quote in enumerate(losers["quotes"][:5]):
-    with loser_cols[i]:
-        st.metric(
-            label=f"{quote['shortName']} ({quote['symbol']})",
-            value=f"${quote['regularMarketPrice']:.2f}",
-            delta=f"{quote['regularMarketChangePercent']:.2f}%",
-        )
+display_trending_items(losers, st.columns(5))
 
 st.markdown("---")
