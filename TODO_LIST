@@ -1,0 +1,30 @@
+# Future
+
+- Enable custom stock database
+    - Get JSON DATa DONE:
+    - Show suggests
+- Display parameters in history
+
+
+
+
+- Summary Stats Incorrect
+- instrument page
+- monte carlo improvements
+- utils could be written / compressed src folder
+
+
+- ticker.json
+  - Load 1000 first then reload with the rest
+  - fix column issue.
+  - add asset type
+
+-Home
+ - Add indices
+ - use fragment (rerun)
+ - make so that they are scrollable
+
+
+
+
+ - better page urls:DONE
