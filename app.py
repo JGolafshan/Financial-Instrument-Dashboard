@@ -1,10 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+    Date: 04/04/2024
+    Author: Joshua David Golafshan
+"""
+
 import uuid
-import streamlit as st
-import extra_streamlit_components as stx
 import pymongo
-from pymongo.server_api import ServerApi
-from src.components import sidebar
+import streamlit as st
 from src.utils import utils
+from src.components import sidebar
+import extra_streamlit_components as stx
+from pymongo.server_api import ServerApi
+
 
 with st.empty():
     @st.cache_resource
