@@ -8,130 +8,120 @@
 
 import pandas as pd
 import streamlit as st
-from src.utils.utils import set_page_state, get_total_documents
-from src.utils.static_values import  static_page_names,static_page_types
+from src.utils.utils import set_page_state
+from src.utils.static_values import static_page_names, static_page_types
 
 set_page_state("pages/queries.py")
+st.title("User Activity")
+st.markdown("""Explore user activities and interactions on this website, including your own and others' actions.""")
 
-if "filter_search" not in st.session_state:
-    st.session_state["filter_search"] = ""
-
-if "filter_user_id" not in st.session_state:
-    st.session_state["filter_user_id"] = ""
-
-if "filter_page_url" not in st.session_state:
-    st.session_state["filter_page_url"] = "Select a Page URL"
-
-if "filter_type" not in st.session_state:
-    st.session_state["filter_type"] = "Select a Page Status"
-
-if "filter_date" not in st.session_state:
-    st.session_state["filter_date"] = None
+# --- Initialize Session State Filters ---
+default_filters = {
+    "filter_search": "",
+    "filter_user_id": "",
+    "filter_page_url": "Select a Page URL",
+    "filter_type": "Select a Page Status",
+    "filter_date": None,
+    "page_number": 1
+}
+for key, val in default_filters.items():
+    st.session_state.setdefault(key, val)
 
 
 # Function to get data from MongoDB
 @st.cache_data(show_spinner="Loading user history...")
-def get_data(size: int, page: int):
+def get_data(size: int, page: int, query: dict = None):
     """
-    Fetches data from MongoDB, returns a batch of records based on page size.
+    Fetches filtered data from MongoDB, returns a batch of records based on page size.
     """
+    st.cache_data.clear()  # Optional: clears previous cached data
     db = st.session_state.db_client["user_history"]
-    st.cache_data.clear()
     collection = db["history"]
 
     skip = size * (page - 1)
-    cursor = collection.find().sort("datetime", -1).skip(skip).limit(size)
+    query = query or {}
+    queries_size = collection.count_documents(query)
+
+    cursor = collection.find(query).sort("datetime", -1).skip(skip).limit(size)
     items = list(cursor)
-    print(items)
 
     # Convert ObjectId to str for caching and display
     for item in items:
         item["_id"] = str(item["_id"])
 
-    raw_df = pd.DataFrame(items)
-    raw_df = raw_df.drop(columns=['_id'], errors='ignore')
+    df = pd.DataFrame(items).drop(columns=['_id'], errors='ignore')
 
-    raw_df.rename(columns={'user_id': 'User ID',
-                           'datetime': 'DateTime',
-                           "page_url": "Page URL",
-                           "use_type": "Type",
-                           "page_parameters": "Parameters"
-                           }, inplace=True)
+    df.rename(columns={
+        'user_id': 'User ID',
+        'datetime': 'DateTime',
+        "page_url": "Page URL",
+        "use_type": "Type",
+        "page_parameters": "Parameters"
+    }, inplace=True)
 
-    return raw_df
+    return df, queries_size
 
 
 # Filter Function
 def filter_data(search_query="", user_id_filter="", page_url_filter="", type_filter="", date_filter=None, size=10,
                 page=1):
     """
-    Filters the data based on user input and returns a DataFrame.
-    Calls get_data to fetch the data from MongoDB.
+    Builds a MongoDB query from filters and fetches the data via get_data().
     """
-    df = get_data(size=size, page=page)
+    query = {}
 
-    # Search bar
-    if search_query := search_query.strip().lower():
-        matches = (
-                df["User ID"].str.lower().str.contains(search_query, na=False) |
-                df["Page URL"].str.lower().str.contains(search_query, na=False) |
-                df["Type"].str.lower().str.contains(search_query, na=False)
-        )
-        df = df[matches]
+    if search_query := search_query.strip():
+        regex = {"$regex": search_query, "$options": "i"}
+        query["$or"] = [
+            {"user_id": regex},
+            {"page_url": regex},
+            {"use_type": regex}
+        ]
 
-    # User ID filter
-    if user_id_filter and user_id_filter.strip():
-        user_id_query = user_id_filter.strip().lower()
-        df = df[df["User ID"].astype(str).str.lower().str.contains(user_id_query, na=False)]
+    if user_id_filter := user_id_filter.strip():
+        query["user_id"] = {"$regex": user_id_filter, "$options": "i"}
 
-    # Date filter
-    if date_filter:
-        df["DateTime"] = pd.to_datetime(df["DateTime"], errors="coerce")
-        df = df[df["DateTime"].dt.date == date_filter]
-
-    # Page URL filter
     if page_url_filter and page_url_filter != "Select a Page URL":
-        df = df[df["Page URL"] == page_url_filter]
+        query["page_url"] = page_url_filter
 
-    # Type filter
     if type_filter and type_filter != "Select a Page Status":
-        df = df[df["Type"] == type_filter]
+        query["use_type"] = type_filter
 
-    return df
+    if date_filter:
+        start = pd.to_datetime(date_filter)
+        end = start + pd.Timedelta(days=1)
+        query["datetime"] = {"$gte": start, "$lt": end}
+
+    return get_data(size=size, page=page, query=query)
 
 
-st.title("User Activity")
-st.markdown("""Explore user activities and interactions on this website, including your own and others' actions.""")
-
+# Layout Columns
 dataframe_column, filter_column = st.columns((9, 2))
 search_input_container, empty1, page_size_container = dataframe_column.columns((2, 4, 1))
 
 # DataFrame + Pagination
 with dataframe_column:
     # Search Box
-    with search_input_container:
-        search_box_input = st.text_input(label="Search Recent Activity",
-                                         value=st.session_state.get("filter_search", ""),
-                                         key="filter_search", placeholder="Search Instruments")
+    search_box_input = search_input_container.text_input(label="Search Recent Activity",
+                                                         value=st.session_state.get("filter_search", ""),
+                                                         key="filter_search", placeholder="Search Instruments")
 
     # Page Size
-    with page_size_container:
-        batch_size = st.selectbox("Page Size", options=[25, 50, 100], index=0)
+    batch_size = page_size_container.selectbox("Page Size", options=[25, 50, 100], index=0)
 
-    # Filter the Data
-    filtered_df = filter_data(
-        search_query=search_box_input,
-        user_id_filter=st.session_state.get("filter_user_id", ""),
-        page_url_filter=st.session_state.get("filter_page_url", ""),
-        type_filter=st.session_state.get("filter_type", ""),
-        date_filter=st.session_state.get("filter_date", None),
+    df_raw, entries = get_data(size=batch_size, page=st.session_state["page_number"])
+    filtered_df, sub_entries = filter_data(
+        search_query=st.session_state["filter_search"],
+        user_id_filter=st.session_state["filter_user_id"],
+        page_url_filter=st.session_state["filter_page_url"],
+        type_filter=st.session_state["filter_type"],
+        date_filter=st.session_state["filter_date"],
         size=batch_size,
-        page=st.session_state.get("page_number", 1)
+        page=st.session_state["page_number"]
     )
 
     # Pagination Setup
-    total_entries = get_total_documents()
-    total_pages = max((total_entries - 1) // batch_size + 1, 1)
+    total_pages = max((sub_entries - 1) // batch_size + 1, 1)
 
     pagination = st.container()
 
@@ -142,30 +132,27 @@ with dataframe_column:
 
     with bottom_menu[0]:
         start_idx = (current_page - 1) * batch_size
-        end_idx = min(start_idx + batch_size, total_entries)
-        st.markdown(f"Showing **{start_idx + 1}** to **{end_idx}** of **{total_entries}** entries")
+        end_idx = min(start_idx + batch_size, sub_entries)
+        st.markdown(f"Showing **{start_idx + 1}** to **{end_idx}** of **{sub_entries}** entries")
 
 # Filter
 with filter_column:
     st.subheader("Filter Options")
+    with st.form(key="filter_form", border=False):
+        st.text_input("Filter by User ID", key="filter_user_id", placeholder="e.g., c3b831ed-979d...-...")
+        st.selectbox("Filter by Page URL", options=static_page_names, key="filter_page_url")
+        st.selectbox("Filter by Page Type", options=static_page_types, key="filter_type")
+        st.date_input("Filter by Date", format="YYYY-MM-DD", key="filter_date")
 
-    if st.button("Clear All Filters"):
-        st.session_state.pop("filter_search")
-        st.session_state.pop("filter_user_id")
-        st.session_state.pop("filter_page_url")
-        st.session_state.pop("filter_type")
-        st.session_state.pop("filter_date")
-        st.rerun()
+        clear, apply = st.columns(2)
+        with clear:
+            if st.form_submit_button("Clear Filters"):
+                for key in default_filters:
+                    st.session_state.pop(key)
+                st.rerun()
 
-    st.text_input(label="Filter by User ID", placeholder="Filter by User ID", key="filter_user_id")
-
-    st.selectbox(label="Filter by Page URL", placeholder="Select a Page URL", index=0,
-                 options=static_page_names, key="filter_page_url")
-    print(list(filtered_df["Page URL"].unique()))
-    st.selectbox(label="Filter by Page Type", placeholder="Select a Page Status", index=0,
-                 options=static_page_types, key="filter_type")
-
-    st.date_input("Filter by Date", value=None, format="YYYY-MM-DD", key="filter_date")
+        with apply:
+            st.form_submit_button("Apply Filters")
 
 # --- Display Data ---
 if filtered_df.empty:
