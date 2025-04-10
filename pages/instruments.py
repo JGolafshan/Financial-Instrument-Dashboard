@@ -7,10 +7,11 @@ Author: Joshua David Golafshan
 Description: Streamlit app to list and filter all available financial instruments.
 """
 
+import orjson
 import pandas as pd
 import streamlit as st
 from src.utils.utils import set_page_state
-import orjson
+
 
 # Set the Streamlit page state and title
 set_page_state("pages/instruments.py")
