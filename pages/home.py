@@ -6,7 +6,6 @@
     Author: Joshua David Golafshan
     Description: This is the default page - the initial page that the user sees.
 """
-import time
 
 import streamlit as st
 import yfinance as yf
@@ -21,7 +20,6 @@ def get_data():
     """
     Fetches filtered data from MongoDB, returns a batch of records based on page size.
     """
-    time.sleep(4)
     best_gainers = yf.screen("day_gainers", sortField='percentchange', sortAsc=True)
     worst_losers = yf.screen("day_losers", sortField='percentchange', sortAsc=True)
 
@@ -51,8 +49,6 @@ gainers, losers = get_data()
 st.markdown("---")
 
 st.subheader("Top performing stocks today")
-# st.write("""Updated live from Yahoo Finance, highlighting trending upward stocks.""")
-
 gainer_cols = st.columns(5)
 for i, quote in enumerate(gainers["quotes"][:5]):
     with gainer_cols[i]:
@@ -63,7 +59,6 @@ for i, quote in enumerate(gainers["quotes"][:5]):
         )
 
 st.subheader("Top underperforming stocks today")
-# st.markdown("""Sorted by largest % loss, track market downturns and identify potential rebounds.""")
 loser_cols = st.columns(5)
 for i, quote in enumerate(losers["quotes"][:5]):
     with loser_cols[i]:
