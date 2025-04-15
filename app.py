@@ -52,13 +52,13 @@ def inject_css_files():
 
 @st.cache_resource
 def inject_user_id_component():
-    return st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
+    return user_id_component.user_component()
 
 
 st.session_state["db_client"] = get_db_connection()
 
-inject_css_files()
 inject_user_id_component()
+inject_css_files()
 
 pg = st.navigation(get_pages(), expanded=True)
 sidebar.sidebar()
