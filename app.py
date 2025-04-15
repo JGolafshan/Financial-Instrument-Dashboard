@@ -13,11 +13,13 @@ from src.utils import utils
 from src.components import sidebar
 import extra_streamlit_components as stx
 from pymongo.server_api import ServerApi
+from src.components import user_id_component
 
 with st.empty():
     @st.cache_resource
     def get_cookie_manager():
         return stx.CookieManager()
+
 
     cookie_manager = get_cookie_manager()
     user_id = cookie_manager.get("user_id") or str(uuid.uuid4())
@@ -43,11 +45,20 @@ def get_pages():
     ]
 
 
+@st.cache_resource
+def inject_css_files():
+    return st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
+
+
+@st.cache_resource
+def inject_user_id_component():
+    return st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
+
+
 st.session_state["db_client"] = get_db_connection()
 
-# TODO Makes these cached / resource since its loaded everytime...
-st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
-utils.user_component()
+inject_css_files()
+inject_user_id_component()
 
 pg = st.navigation(get_pages(), expanded=True)
 sidebar.sidebar()
