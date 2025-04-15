@@ -29,18 +29,6 @@ def yahoo_data(ticker: str) -> Optional[Any]:
         return None
 
 
-def user_component():
-    # HTML for floating user ID box with a copy button
-    session_id = st.session_state.get("user_id", "USER-123456")
-
-    st.markdown(f"""
-        <div class="floating-user-id">
-            <span>🆔 </span>
-            <span>{session_id}</span>
-        </div>
-    """, unsafe_allow_html=True)
-
-
 def set_page_state(page: str):
     """Set the current page in session state and navigate if needed."""
     if st.session_state.get("current_page") != page:
