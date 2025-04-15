@@ -84,17 +84,19 @@ def display_instrument(stock_info):
 def calculate_stock_summary_statistics(stock_data):
     latest_price = stock_data.iloc[-1]["Close"]
     previous_year_price = stock_data.iloc[-252]["Close"] if len(stock_data) > 252 else stock_data.iloc[0]["Close"]
+    print(latest_price)
+    print(previous_year_price)
     price_diff = latest_price - previous_year_price
-    pct_diff = (price_diff / previous_year_price) * 100
+    percent_diff = (price_diff / previous_year_price) * 100
     latest_close_price = stock_data.iloc[-1]["Close"]
     high_52w = stock_data["High"].tail(252).max()
     low_52w = stock_data["Low"].tail(252).min()
 
-    return price_diff, pct_diff, latest_close_price, high_52w, low_52w
+    return latest_close_price, price_diff, percent_diff, high_52w, low_52w
 
 
 def display_summary_statistics(stock_data):
-    latest_close_price, prc_diff, pct_diff, high_52_w, low_52_w = calculate_stock_summary_statistics(stock_data)
+    latest_close_price, price_diff, percent_diff, high_52_w, low_52_w = calculate_stock_summary_statistics(stock_data)
     col0, col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1, 1])
 
     with col0:
@@ -104,7 +106,7 @@ def display_summary_statistics(stock_data):
     with col2:
         st.metric("Close Price", f"${latest_close_price:.2f}")
     with col3:
-        st.metric("Price Difference (YoY)", f"${prc_diff:.2f}", f"{pct_diff:+.2f}%")
+        st.metric("Price Difference (YoY)", f"${price_diff:.2f}", f"{percent_diff:+.2f}%")
     with col4:
         st.metric("52-Week High", f"${high_52_w:.2f}")
     with col5:
