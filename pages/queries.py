@@ -13,7 +13,7 @@ from src.utils.static_values import static_page_names, static_page_types
 
 
 # Function to get data from MongoDB
-@st.cache_data(show_spinner="Loading user history...")
+@st.cache_data(show_spinner="Loading user history...", ttl="10s")
 def get_data(size: int, page: int, query: dict = None):
     """
     Fetches filtered data from MongoDB, returns a batch of records based on page size.
