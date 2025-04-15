@@ -6,8 +6,23 @@
     Author: Joshua David Golafshan
 """
 
+import streamlit as st
 
-def option_metric(css_style: str, option_type: str, option_price: float, option_delta: float, option_theta: float, option_rho: float):
+
+def user_component():
+    # HTML for floating user ID box with a copy button
+    session_id = st.session_state.get("user_id", "USER-123456")
+
+    st.markdown(f"""
+        <div class="floating-user-id">
+            <span>🆔 </span>
+            <span>{session_id}</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+
+def option_metric(css_style: str, option_type: str, option_price: float, option_delta: float, option_theta: float,
+                  option_rho: float):
     return f"""
         <div class="metric-container">
             <div class="{css_style}">

@@ -13,7 +13,7 @@ from src.utils import utils
 from src.components import sidebar
 import extra_streamlit_components as stx
 from pymongo.server_api import ServerApi
-from src.components import user_id_component
+from src.components.simple_components import user_component
 
 with st.empty():
     @st.cache_resource
@@ -52,7 +52,7 @@ def inject_css_files():
 
 @st.cache_resource
 def inject_user_id_component():
-    return user_id_component.user_component()
+    return user_component()
 
 
 st.session_state["db_client"] = get_db_connection()

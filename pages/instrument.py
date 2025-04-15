@@ -11,12 +11,12 @@ import datetime
 import numpy as np
 import streamlit as st
 from zoneinfo import ZoneInfo
-from src.utils.utils import set_page_state, yahoo_data
 from streamlit_javascript import st_javascript
-from src.components.custom_metric import option_metric
-from src.components.historial_chart import historical_chart
 from src.components.heatmap_graph import plot_heatmap
+from src.utils.utils import set_page_state, yahoo_data
+from src.components.simple_components import option_metric
 from src.core.black_scholes_model import BlackScholesModel
+from src.components.historial_chart import historical_chart
 from src.core.monte_carlo_simulation import MonteCarloSimulation
 
 # Load Components
