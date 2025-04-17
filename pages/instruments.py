@@ -22,8 +22,8 @@ def load_clean_ticker_data():
     df.rename(columns={
         'ticker': 'Ticker',
         'company_name': 'Company Name',
-        'exchange_name': 'Exchange Name',
-        'exchange_code': 'Exchange Symbol',
+        'exchange_name': 'Exchange Symbol',
+        'exchange_code': 'Exchange Name',
     }, inplace=True)
     return df
 
