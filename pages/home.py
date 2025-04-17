@@ -46,11 +46,12 @@ def display_trending_items(screen_data, columns, start_index):
                 symbol = quote["symbol"]
                 price = quote["regularMarketPrice"]
                 change = quote["regularMarketChangePercent"]
-                st.metric(
-                    label=f"{company_name} ({symbol})",
-                    value=f"${price:.2f}",
-                    delta=f"{change:.2f}%"
-                )
+                st.metric(border=True,
+                          label=f"{company_name} ({symbol})",
+                          value=f"${price:.2f}",
+                          delta=f"{change:.2f}%"
+                          )
+
             except Exception as e:
                 st.warning(f"Error loading stock: {e}")
 
