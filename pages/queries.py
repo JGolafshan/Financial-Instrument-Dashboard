@@ -80,6 +80,7 @@ def filter_data(search_query="", user_id_filter="", page_url_filter="", type_fil
 
 def main():
     set_page_state("pages/queries.py")
+
     st.title("User Activity")
     st.markdown("""Explore user activities and interactions on this website, including your own and others' actions.""")
 
@@ -157,7 +158,7 @@ def main():
     if filtered_df.empty:
         pagination.warning("No rows found matching filtering criteria.")
     else:
-        pagination.dataframe(filtered_df, use_container_width=True, hide_index=True)
+        pagination.dataframe(filtered_df, use_container_width=True, height=400, hide_index=True)
 
 
 if __name__ == "__main__":
