@@ -6,6 +6,7 @@
     Author: Joshua David Golafshan
     Description: This is the default page - the initial page that the user sees.
 """
+import time
 
 import streamlit as st
 import yfinance as yf
@@ -13,8 +14,8 @@ from src.utils.utils import set_page_state
 
 CHUNK_SIZE = 5
 BACKEND_REFRESH_RATE = "30s"
-TRENDING_REFRESH = "20s"
-INDICES_REFRESH = "60s"
+TRENDING_REFRESH = "5s"
+INDICES_REFRESH = "10s"
 
 
 @st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Loading Stock Screener")
@@ -57,6 +58,7 @@ def display_trending_items(screen_data, columns, start_index):
 @st.fragment(run_every=TRENDING_REFRESH)
 def trending_display():
     indices, gainers, losers = get_data()
+    time.sleep(2)
 
     st.subheader("Top Stocks Today")
     gainer_index = get_next_index("gainer_index", len(gainers["quotes"]))
@@ -70,6 +72,7 @@ def trending_display():
 @st.fragment(run_every=INDICES_REFRESH)
 def indices_display():
     indices, gainers, losers = get_data()
+    time.sleep(2)
     st.subheader("Global Indices")
     indices_index = get_next_index("indices_index", len(indices))
     display_trending_items(indices, st.columns(CHUNK_SIZE), indices_index)
@@ -79,7 +82,7 @@ def indices_display():
 def main():
     set_page_state("pages/home.py")
 
-    st.title("Welcome to the Stock Dashboard")
+    st.title("Welcome to OmniQuant")
     st.markdown("""
         **A comprehensive platform for tracking, analyzing, and exploring financial market data. 
         Utilize interactive tools and advanced analytics to support your investment decisions.**""")

@@ -11,7 +11,7 @@ from src.components.custom_searchbar import custom_search_bar
 
 
 def sidebar():
-    st.sidebar.title("📊 Stock Dashboard")
+    st.sidebar.title("📊 OmniQuant")
 
     with st.sidebar:
         custom_search_bar("search_bar_container", "small_search", [0.8, 0.1, 0.1])
