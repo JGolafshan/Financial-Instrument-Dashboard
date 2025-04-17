@@ -96,12 +96,12 @@ def calculate_stock_summary_statistics(stock_data):
 
 def display_summary_statistics(stock_data):
     latest_close_price, price_diff, percent_diff, high_52_w, low_52_w = calculate_stock_summary_statistics(stock_data)
-    col0, col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1, 1])
+    col2, col3, col4, col5 = st.columns([1, 1, 1, 1])
 
-    with col0:
-        instrument_change(False)
-    with col1:
-        market_status(True)
+    # with col0:
+    #     instrument_change(False)
+    # with col1:
+    #     market_status(True)
     with col2:
         st.metric("Close Price", f"${latest_close_price:.2f}")
     with col3:
