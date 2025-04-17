@@ -5,7 +5,7 @@
 This repository provides an interactive dashboard for analyzing financial instruments. It offers tools for exploring asset data, visualizing option prices, running simulations, and reviewing user-submitted queries.
 
 ### Live Demo
-[https://financial-instrument-dashboard.streamlit.app/](https://financial-instrument-dashboard.streamlit.app/)
+[https://omniquant.streamlit.app/](https://omniquant.streamlit.app/)
 
 
 ### Key Components
