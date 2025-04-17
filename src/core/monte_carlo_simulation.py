@@ -1,37 +1,72 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 
 
 class MonteCarloSimulation:
-    def __init__(self, data, forward_period, num_simulations):
+    def __init__(self, data, forward_period, backward_period, num_simulations):
         """
         Initializes the Monte Carlo Simulation.
 
-        :param data: Historical data in the form of a pandas DataFrame.
+        :param data: Historical price data as a pandas Series with datetime index.
         :param forward_period: Number of periods to simulate into the future.
+        :param backward_period: Number of historical periods to include.
         :param num_simulations: Number of simulations to run.
         """
-        self.data = data
+        if isinstance(data, pd.Series):
+            if not isinstance(data.index, pd.DatetimeIndex):
+                raise ValueError("Data must have a DatetimeIndex.")
+            self.original_index = data.index
+            self.start_date = data.index[-1]
+            self.data = data[-backward_period:].to_numpy()
+            self.historical_index = data.index[-backward_period:]
+        else:
+            raise TypeError("Data must be a pandas Series with a DatetimeIndex.")
+
+        if len(self.data) < backward_period:
+            raise ValueError("Not enough data for the specified backward period.")
+
         self.forward_period = forward_period
+        self.backward_period = backward_period
         self.num_simulations = num_simulations
         self.simulation_results = None
 
     def simulate(self):
         """
-        Runs the Monte Carlo simulation to generate future outcomes.
+        Runs the Monte Carlo simulation and returns price paths with historical look-back.
         """
-        # Initialize a DataFrame to store simulation results
-        simulation_outcomes = np.zeros((self.num_simulations, self.forward_period))
+        log_returns = np.log(self.data[1:] / self.data[:-1])
+        mean = np.mean(log_returns)
+        variance = np.var(log_returns)
+        drift = mean - (0.5 * variance)
+        daily_volatility = np.std(log_returns)
 
-        # Generate random outcomes based on the historical data
-        for i in range(self.num_simulations):
-            # Sample from the historical data and simulate forward
-            random_walk = np.random.choice(self.data.values.flatten(), size=self.forward_period)
-            simulation_outcomes[i, :] = random_walk
+        total_periods = self.backward_period + self.forward_period
+        price_paths = np.full((total_periods, self.num_simulations + 1), np.nan)
 
-        # Convert the results to a DataFrame
-        self.simulation_results = pd.DataFrame(simulation_outcomes,
-                                               columns=[f'Simulation{i + 1}' for i in range(self.forward_period)])
+        # Fill historical data only in the first column
+        price_paths[:self.backward_period, 0] = self.data
+
+        # Simulate future paths
+        current_prices = self.data[-1] * np.ones(self.num_simulations)
+        for t in range(self.forward_period):
+            shocks = norm.ppf(np.random.rand(self.num_simulations))
+            returns = drift + daily_volatility * shocks
+            current_prices *= np.exp(returns)
+            price_paths[self.backward_period + t, 1:] = current_prices
+
+        hist_dates = self.historical_index
+        next_business_day = pd.bdate_range(start=hist_dates[-1] + pd.Timedelta(days=1), periods=1)[0]
+        future_dates = pd.bdate_range(start=next_business_day, periods=self.forward_period)
+
+        full_index = hist_dates.append(future_dates)
+
+        # Column names: "Historical Data", "Simulation 1", ...
+        columns = ["Historical Data"] + [f"Simulation {i}" for i in range(1, self.num_simulations + 1)]
+
+        self.simulation_results = pd.DataFrame(price_paths, index=full_index, columns=columns)
+
+        return self.simulation_results
 
     def get_simulation_results(self):
         """
@@ -40,23 +75,3 @@ class MonteCarloSimulation:
         if self.simulation_results is None:
             raise ValueError("Simulation has not been run yet. Call simulate() first.")
         return self.simulation_results
-
-    def get_mean_outcome(self):
-        """
-        Returns the mean outcome across all simulations for each period as a DataFrame.
-        """
-        if self.simulation_results is None:
-            raise ValueError("Simulation has not been run yet. Call simulate() first.")
-        mean_outcome = self.simulation_results.mean(axis=0)
-        return mean_outcome
-
-    def get_percentile_outcome(self, percentile=50):
-        """
-        Returns the percentile outcome (default 50th percentile) across all simulations for each period as a DataFrame.
-
-        :param percentile: The percentile to return (default is 50th percentile, i.e., median).
-        """
-        if self.simulation_results is None:
-            raise ValueError("Simulation has not been run yet. Call simulate() first.")
-        percentile_outcome = self.simulation_results.quantile(q=percentile / 100, axis=0)
-        return percentile_outcome

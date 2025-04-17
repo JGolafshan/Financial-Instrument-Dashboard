@@ -50,6 +50,7 @@ def filter_data(df, search_query="", exchange_name_filter="", exchange_symbol_fi
 
 def main():
     set_page_state("pages/instruments.py")
+
     st.title("Instrument Directory")
     st.markdown("""Explore and filter available financial instruments on this website.
                        Use the options on the right to filter different categorical variables.""")

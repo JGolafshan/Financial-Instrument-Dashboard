@@ -12,12 +12,11 @@ import numpy as np
 import streamlit as st
 from zoneinfo import ZoneInfo
 from streamlit_javascript import st_javascript
-from src.components.heatmap_graph import plot_heatmap
 from src.utils.utils import set_page_state, yahoo_data
 from src.components.simple_components import option_metric
 from src.core.black_scholes_model import BlackScholesModel
-from src.components.historial_chart import historical_chart
 from src.core.monte_carlo_simulation import MonteCarloSimulation
+from src.components.graphing_components import plot_heatmap, monte_carlo_chart, historical_chart
 
 # Load Components
 set_page_state("pages/instrument.py")
@@ -82,12 +81,12 @@ def display_instrument(stock_info):
 
 
 def calculate_stock_summary_statistics(stock_data):
-    latest_price = stock_data.iloc[-1]["Close"]
-    previous_year_price = stock_data.iloc[-252]["Close"] if len(stock_data) > 252 else stock_data.iloc[0]["Close"]
+    latest_price = stock_data.iloc[0]["Close"]
+    previous_year_price = stock_data.iloc[252]["Close"] if len(stock_data) > 252 else stock_data.iloc[0]["Close"]
     print(latest_price)
     print(previous_year_price)
     price_diff = latest_price - previous_year_price
-    percent_diff = (price_diff / previous_year_price) * 100
+    percent_diff = (price_diff / previous_year_price)
     latest_close_price = stock_data.iloc[-1]["Close"]
     high_52w = stock_data["High"].tail(252).max()
     low_52w = stock_data["Low"].tail(252).min()
@@ -164,14 +163,17 @@ def plot_historical_chart(stock_data):
 
 def show_monte_carlo_page():
     st.subheader("📈 Monte Carlo Simulation ")
+
     with st.expander("⚙️ Settings", expanded=False):
         number_of_simulations = st.number_input('Number of Simulations', min_value=1, value=30, step=10, max_value=300)
         look_back = st.number_input('Look Back Period', min_value=1, value=30, step=5, max_value=100)
-        look_forward = st.number_input('Look Forward Period', min_value=1, value=30, step=30, max_value=365*3)
+        look_forward = st.number_input('Look Forward Period', min_value=1, value=30, step=30, max_value=365 * 3)
 
-    mc_sim = MonteCarloSimulation(get_instrument_data(instrument_code)["history"], look_forward, number_of_simulations)
+    mc_sim = MonteCarloSimulation(get_instrument_data(instrument_code)["history"]["Close"], look_forward, look_back,
+                                  number_of_simulations)
     mc_sim.simulate()
-    st.line_chart(mc_sim.get_simulation_results(), use_container_width=True)
+    simulation_results = mc_sim.get_simulation_results()
+    st.plotly_chart(monte_carlo_chart(simulation_results), use_container_width=True)
 
 
 def show_info():
