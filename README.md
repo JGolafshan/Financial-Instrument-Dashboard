@@ -7,7 +7,9 @@ This repository provides an interactive dashboard for analyzing financial instru
 ### Live Demo
 [https://omniquant.streamlit.app/](https://omniquant.streamlit.app/)
 
-<img src="Home Page Screenshot.png" alt="Diagram" width="800"/>
+<a href="https://omniquant.streamlit.app/">
+  <img src="Home Page Screenshot.png" alt="Diagram" width="800"/>
+</a>
 
 
 ### Key Components
