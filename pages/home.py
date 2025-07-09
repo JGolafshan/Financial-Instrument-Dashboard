@@ -13,7 +13,7 @@ import yfinance as yf
 from src.utils.utils import set_page_state
 
 CHUNK_SIZE = 5
-BACKEND_REFRESH_RATE = "30s"
+BACKEND_REFRESH_RATE = "360s"
 TRENDING_REFRESH = "5s"
 INDICES_REFRESH = "10s"
 
