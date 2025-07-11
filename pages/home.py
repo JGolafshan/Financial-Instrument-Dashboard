@@ -57,8 +57,7 @@ def display_trending_items(screen_data, columns, start_index):
 
 
 @st.fragment(run_every=TRENDING_REFRESH)
-def trending_display():
-    _, gainers, losers = get_data()
+def trending_display(gainers, losers):
     st.subheader("Top Stocks Today")
     gainer_index = get_next_index("gainer_index", len(gainers["quotes"]))
     display_trending_items(gainers["quotes"], st.columns(CHUNK_SIZE), gainer_index)
@@ -69,8 +68,7 @@ def trending_display():
 
 
 @st.fragment(run_every=INDICES_REFRESH)
-def indices_display():
-    indices, _, _ = get_data()
+def indices_display(indices):
     st.subheader("Global Indices")
     indices_index = get_next_index("indices_index", len(indices))
     display_trending_items(indices, st.columns(CHUNK_SIZE), indices_index)
@@ -97,8 +95,10 @@ def main():
 
     st.markdown("---")
 
-    indices_display()
-    trending_display()
+    indices, gainers, losers = get_data()
+
+    indices_display(indices)
+    trending_display(gainers, losers)
 
     st.markdown("---")
 
