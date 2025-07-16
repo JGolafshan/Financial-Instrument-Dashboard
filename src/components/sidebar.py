@@ -29,7 +29,7 @@ def add_navigation_links():
 
 def author_details():
     # Creator container w/ linked-in link
-    linked_in_link = "https://au.linkedin.com/in/jgd000"
+    linked_in_link = "https://www.linkedin.com/in/joshua-david-golafshan-au/"
     st.sidebar.markdown(
         f"""
             <div id="creator-container">
