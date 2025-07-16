@@ -13,9 +13,9 @@ import yfinance as yf
 from src.utils.utils import set_page_state
 
 CHUNK_SIZE = 5
-BACKEND_REFRESH_RATE = "360s"
-TRENDING_REFRESH = "20s"
-INDICES_REFRESH = "25s"
+BACKEND_REFRESH_RATE = "600s"
+TRENDING_REFRESH = "120s"
+INDICES_REFRESH = "180s"
 
 
 @st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
@@ -23,10 +23,20 @@ def get_data():
     """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
     best_gainers = yf.screen("day_gainers", sortField='percentchange', sortAsc=True)
     worst_losers = yf.screen("day_losers", sortField='percentchange', sortAsc=True)
-    indices = yf.tickers.Tickers([
+
+    indices = yf.Tickers([
         '^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'
     ])
-    indices_info = [ticker.info for ticker in indices.tickers.values()]
+
+    indices_info = []
+    for ticker in indices.tickers.values():
+        try:
+            info = ticker.info
+            indices_info.append(info)
+            time.sleep(0.2)
+        except Exception as e:
+            print(f"Error fetching data for {ticker.ticker}: {e}")
+
     return indices_info, best_gainers, worst_losers
 
 
