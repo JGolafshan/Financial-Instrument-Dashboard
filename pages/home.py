@@ -8,8 +8,9 @@
 """
 
 import time
-import streamlit as st
 import yfinance as yf
+import streamlit as st
+from curl_cffi import requests
 from src.utils.utils import set_page_state
 
 CHUNK_SIZE = 5
@@ -21,12 +22,14 @@ INDICES_REFRESH = "180s"
 @st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
 def get_data():
     """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
-    best_gainers = yf.screen("day_gainers", sortField='percentchange', sortAsc=True)
-    worst_losers = yf.screen("day_losers", sortField='percentchange', sortAsc=True)
+    session = requests.Session(impersonate="chrome")
+
+    best_gainers = yf.screen("day_gainers", sortField='percentchange', sortAsc=True, session=session)
+    worst_losers = yf.screen("day_losers", sortField='percentchange', sortAsc=True, session=session)
 
     indices = yf.Tickers([
         '^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'
-    ])
+    ], session=session)
 
     indices_info = []
     for ticker in indices.tickers.values():
