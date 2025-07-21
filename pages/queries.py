@@ -14,7 +14,15 @@ from src.utils.static_values import static_page_names, static_page_types
 
 def extract_search_value(val):
     if isinstance(val, list) and val:
-        return val[0].get('search_value', 'N/A') or 'N/A'
+        first = val[0]
+        if isinstance(first, dict):
+            return first.get('search_value', 'N/A') or 'N/A'
+        else:
+            return str(first)
+    elif isinstance(val, dict):
+        return val.get('search_value', 'N/A') or 'N/A'
+    elif isinstance(val, str):
+        return val
     return 'N/A'
 
 
@@ -39,7 +47,11 @@ def get_data(size: int, page: int, query: dict = None):
         item["_id"] = str(item["_id"])
 
     df = pd.DataFrame(items).drop(columns=['_id'], errors='ignore')
-    df["page_parameters"] = df["page_parameters"].apply(extract_search_value)
+
+    if "page_parameters" in df.columns:
+        df["page_parameters"] = df["page_parameters"].apply(extract_search_value)
+    else:
+        df["page_parameters"] = "N/A"
 
     df.rename(columns={
         'user_id': 'User ID',
@@ -52,21 +64,11 @@ def get_data(size: int, page: int, query: dict = None):
     return df, queries_size
 
 
-# Filter Function
-def filter_data(search_query="", user_id_filter="", page_url_filter="", type_filter="", date_filter=None, size=10,
-                page=1):
+def filter_data(user_id_filter="", page_url_filter="", type_filter="", date_filter=None, size=1000, page=1):
     """
-    Builds a MongoDB query from filters and fetches the data via get_data().
+    Fetches data from MongoDB applying only structured filters, no text search.
     """
     query = {}
-
-    if search_query := search_query.strip():
-        regex = {"$regex": search_query, "$options": "i"}
-        query["$or"] = [
-            {"user_id": regex},
-            {"page_url": regex},
-            {"use_type": regex}
-        ]
 
     if user_id_filter := user_id_filter.strip():
         query["user_id"] = {"$regex": user_id_filter, "$options": "i"}
@@ -110,26 +112,45 @@ def main():
     # DataFrame + Pagination
     with dataframe_column:
         # Search Box
-        search_input_container.text_input(label="Search Recent Activity",
-                                          value=st.session_state.get("filter_search", ""),
-                                          key="filter_search", placeholder="Search Recent User Actives"
-                                          )
+        search_input_container.text_input(
+            label="Search Recent Activity",
+            value=st.session_state.get("filter_search", ""),
+            key="filter_search",
+            placeholder="Search Recent User Activities"
+        )
 
         # Page Size
         batch_size = page_size_container.selectbox("Page Size", options=[25, 50, 100], index=0)
 
+        # Get data WITHOUT text search filtering on Mongo side
         filtered_df, sub_entries = filter_data(
-            search_query=st.session_state["filter_search"],
             user_id_filter=st.session_state["filter_user_id"],
             page_url_filter=st.session_state["filter_page_url"],
             type_filter=st.session_state["filter_type"],
             date_filter=st.session_state["filter_date"],
-            size=batch_size,
-            page=st.session_state["page_number"]
+            size=1000,  # TODO Client Side filtering?
+            page=1
         )
 
-        # Pagination Setup
+        # Apply client-side search filter across all string columns
+        search_query = st.session_state["filter_search"].strip()
+        if search_query:
+            mask = pd.Series(False, index=filtered_df.index)
+            for col in filtered_df.columns:
+                if filtered_df[col].dtype == object:
+                    mask |= filtered_df[col].str.contains(search_query, case=False, na=False)
+            filtered_df = filtered_df[mask]
+            sub_entries = filtered_df.shape[0]
+
+        # Pagination calculations
         total_pages = max((sub_entries - 1) // batch_size + 1, 1)
+        current_page = st.session_state["page_number"]
+        current_page = min(max(current_page, 1), total_pages)  # clamp page number
+
+        start_idx = (current_page - 1) * batch_size
+        end_idx = min(start_idx + batch_size, sub_entries)
+
+        paged_df = filtered_df.iloc[start_idx:end_idx]
 
         pagination = st.container()
 
@@ -138,11 +159,9 @@ def main():
             current_page = st.number_input("Page Number", min_value=1, max_value=total_pages, step=1, key="page_number")
 
         with bottom_menu[0]:
-            start_idx = (current_page - 1) * batch_size
-            end_idx = min(start_idx + batch_size, sub_entries)
             st.markdown(f"Showing **{start_idx + 1}** to **{end_idx}** of **{sub_entries}** entries")
 
-    # Filter
+    # Filter sidebar
     with filter_column:
         st.subheader("Filter Options")
         with st.form(key="filter_form", border=False):
@@ -156,16 +175,17 @@ def main():
                 if st.form_submit_button("Clear Filters"):
                     for key in default_filters:
                         st.session_state.pop(key)
+                    st.session_state["page_number"] = 1
                     st.rerun()
 
             with apply:
                 st.form_submit_button("Apply Filters")
 
-    # --- Display Data ---
-    if filtered_df.empty:
+    # Display DataFrame
+    if paged_df.empty:
         pagination.warning("No rows found matching filtering criteria.")
     else:
-        pagination.dataframe(filtered_df, use_container_width=True, height=400, hide_index=True)
+        pagination.dataframe(paged_df, use_container_width=True, height=400, hide_index=True)
 
 
 if __name__ == "__main__":
