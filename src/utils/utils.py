@@ -8,6 +8,7 @@
 import datetime
 import yfinance as yf
 import streamlit as st
+import streamlit_javascript
 from typing import Optional, Any
 from pymongo.errors import DuplicateKeyError
 
@@ -87,3 +88,71 @@ def insert_document(user_id, datetime_custom, page_url, page_parameters, use_typ
     except Exception as e:
         st.error(f"Error inserting document: {e}")
         return None
+
+
+def get_user_timezone():
+    return streamlit_javascript.st_javascript("Intl.DateTimeFormat().resolvedOptions().timeZone")
+
+
+exchange_timezones = {
+    "Universal": {
+        "City": None,
+        "Timezone": "UTC"
+    },
+    "US East": {
+        "City": "New York",
+        "Timezone": "America/New_York"
+    },
+    "UK": {
+        "City": "London",
+        "Timezone": "Europe/London"
+    },
+    "Germany": {
+        "City": "Frankfurt",
+        "Timezone": "Europe/Berlin"
+    },
+    "France": {
+        "City": "Paris",
+        "Timezone": "Europe/Paris"
+    },
+    "Switzerland": {
+        "City": "Zurich",
+        "Timezone": "Europe/Zurich"
+    },
+    "Japan": {
+        "City": "Tokyo",
+        "Timezone": "Asia/Tokyo"
+    },
+    "China": {
+        "City": "Shanghai",
+        "Timezone": "Asia/Shanghai"
+    },
+    "Hong Kong": {
+        "City": "Hong Kong",
+        "Timezone": "Asia/Hong_Kong"
+    },
+    "India": {
+        "City": "Mumbai",
+        "Timezone": "Asia/Kolkata"
+    },
+    "Australia": {
+        "City": "Sydney",
+        "Timezone": "Australia/Sydney"
+    },
+    "Brazil": {
+        "City": "São Paulo",
+        "Timezone": "America/Sao_Paulo"
+    },
+    "Canada": {
+        "City": "Toronto",
+        "Timezone": "America/Toronto"
+    },
+    "Middle East": {
+        "City": "Dubai",
+        "Timezone": "Asia/Dubai"
+    },
+    "Africa": {
+        "City": "Johannesburg",
+        "Timezone": "Africa/Johannesburg"
+    }
+}
