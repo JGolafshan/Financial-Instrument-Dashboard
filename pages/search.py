@@ -22,7 +22,14 @@ def main():
         with content:
             content.header("Search for Instruments")
             content.markdown("#### Search over 54,000 Instruments available")
+
+            if "search_warning" in st.session_state:
+                st.warning(st.session_state["search_warning"])
+                del st.session_state["search_warning"]
+                del st.session_state["code"]
+
             custom_search_bar("form_container", "big_search", [0.9, 0.1, 0.1])
+
 
 
 if __name__ == "__main__":

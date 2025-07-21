@@ -178,12 +178,7 @@ def show_monte_carlo_page():
     st.plotly_chart(monte_carlo_chart(simulation_results), use_container_width=True)
 
 
-def show_info():
-    instrument_data = get_instrument_data(instrument_code)
-    if instrument_data is None:
-        st.warning(f"Instrument {instrument_code} not found.")
-        return
-
+def show_info(instrument_data):
     stock_info = instrument_data["info"]
     stock_data = instrument_data["history"]
 
@@ -206,6 +201,12 @@ def show_info():
 
 if __name__ == "__main__":
     if instrument_code and instrument_code != "NONE":
-        show_info()
+        instrument_data = get_instrument_data(instrument_code)
+        if instrument_data["info"]["trailingPegRatio"] is None: # TODO this should be improved
+            st.session_state["search_warning"] = f"Instrument {instrument_code} not found."
+            st.switch_page("pages/search.py")
+        else:
+            show_info(instrument_data)
     else:
         st.switch_page("pages/search.py")
+
