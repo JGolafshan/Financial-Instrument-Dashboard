@@ -55,17 +55,22 @@ def inject_user_id_component():
     return user_component()
 
 
-st.session_state["db_client"] = get_db_connection()
+def main():
+    st.session_state["db_client"] = get_db_connection()
 
-inject_user_id_component()
-inject_css_files()
+    inject_user_id_component()
+    inject_css_files()
 
-pg = st.navigation(get_pages(), expanded=True)
-sidebar.sidebar()
+    pg = st.navigation(get_pages(), expanded=True)
+    sidebar.sidebar()
 
-try:
-    pg.run()
+    try:
+        pg.run()
 
-except Exception as e:
-    st.header("Error")
-    st.error(f"An unexpected error occurred. Redirecting to error page... \n\n {e.__str__()}")
+    except Exception as e:
+        st.header("Error")
+        st.error(f"An unexpected error occurred. Redirecting to error page... \n\n {e.__str__()}")
+
+
+if __name__ == "__main__":
+    print(main())
