@@ -8,6 +8,7 @@
 import datetime
 import yfinance as yf
 import streamlit as st
+import streamlit_theme
 import streamlit_javascript
 from typing import Optional, Any
 from pymongo.errors import DuplicateKeyError
@@ -36,6 +37,31 @@ def set_page_state(page: str):
         st.session_state.current_page = page
         user_id = st.session_state.get("user_id")
         insert_document(user_id, datetime.datetime.now(), page, [], "viewed")
+
+
+def set_root_css():
+    check_for_config_theme = st.get_option("theme.base")
+
+    if check_for_config_theme == "light":
+        return f"""
+            <style>
+                :root {{
+                    --bg-color: rgba(151, 166, 195, 0.25);
+                    --bg-id-color: rgb(240, 242, 247);
+                    --text-color: #31333F;
+                }}
+            </style>
+        """
+    else:
+        return f"""
+            <style>
+                :root {{
+                    --bg-color: rgba(172, 177, 195, 0.25);
+                    --bg-id-color: rgb(38, 39, 48);
+                    --text-color: #fafafa;
+                }}
+            </style>
+        """
 
 
 def load_css(file_path: str) -> str:

@@ -14,6 +14,7 @@ from src.components import sidebar
 import extra_streamlit_components as stx
 from pymongo.server_api import ServerApi
 from src.components.simple_components import user_component
+from src.utils.utils import set_root_css
 
 with st.empty():
     @st.cache_resource
@@ -47,7 +48,7 @@ def get_pages():
 
 @st.cache_resource
 def inject_css_files():
-    return st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
+    st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
 
 
 @st.cache_resource
@@ -59,6 +60,7 @@ def main():
     st.session_state["db_client"] = get_db_connection()
 
     inject_user_id_component()
+    st.markdown(set_root_css(), unsafe_allow_html=True)
     inject_css_files()
 
     pg = st.navigation(get_pages(), expanded=True)
