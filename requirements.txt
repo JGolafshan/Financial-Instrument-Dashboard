@@ -12,6 +12,7 @@ streamlit==1.47.0
 matplotlib==3.10.1
 alpha-vantage==3.0.0
 beautifulsoup4==4.13.3
+streamlit-theme==0.58.0
 streamlit-router==0.1.8
 streamlit-js-eval==0.1.7
 streamlit-javascript==0.1.5
