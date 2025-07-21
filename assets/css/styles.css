@@ -1,5 +1,5 @@
 .stMainBlockContainer {
-        padding-top: 4rem;
+        padding-top: 3rem;
         max-width: 1400px;
 }
 
@@ -73,7 +73,7 @@
     align-items: center;
     flex-direction: row;
     width: 100%;
-    max-width: 800px; /* Ensure it's not too wide on large screens */
+    max-width: 800px;
     box-sizing: border-box;
 }
 
@@ -84,9 +84,9 @@
     flex-wrap: wrap;
     justify-content: space-evenly;
     gap: 10px;
-    border-radius: 12px; /* Rounded corners for a modern feel */
+    border-radius: 12px;
     padding: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 800px;
 }
@@ -94,33 +94,33 @@
 /* Metric item (label + value) styling */
 .metric-item {
     text-align: center;
-    flex: 1 1 100px; /* Allow items to shrink but not go below 120px */
+    flex: 1 1 100px;
 }
 
 /* Metric value styling */
 .metric-value {
-    font-size: 1.6rem; /* Larger font for value */
-    font-weight: 600; /* Semi-bold for emphasis */
-    color: white; /* Dark color for the values */
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: white;
     margin-top: 5px;
     line-height: 1.4;
 }
 
 /* Metric label styling */
 .metric-label {
-    font-size: 1.1rem; /* Slightly larger label */
-    font-weight: 500; /* Medium weight for readability */
-    color: light-grey; /* Lighter color for labels */
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: light-grey;
     margin-bottom: 10px;
 }
 
 /* Call and Put specific background colors */
 .metric-call {
-    background-color: green; /* Call: Green */
-    color: white; /* White text for better contrast */
+    background-color: green;
+    color: white;
 }
 
 .metric-put {
-    background-color: red; /* Put: Red */
-    color: white; /* White text for better contrast */
+    background-color: red;
+    color: white;
 }
