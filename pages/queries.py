@@ -12,6 +12,12 @@ from src.utils.utils import set_page_state
 from src.utils.static_values import static_page_names, static_page_types
 
 
+def extract_search_value(val):
+    if isinstance(val, list) and val:
+        return val[0].get('search_value', 'N/A') or 'N/A'
+    return 'N/A'
+
+
 # Function to get data from MongoDB
 @st.cache_data(show_spinner="Loading user history...", ttl="10s")
 def get_data(size: int, page: int, query: dict = None):
@@ -33,6 +39,7 @@ def get_data(size: int, page: int, query: dict = None):
         item["_id"] = str(item["_id"])
 
     df = pd.DataFrame(items).drop(columns=['_id'], errors='ignore')
+    df["page_parameters"] = df["page_parameters"].apply(extract_search_value)
 
     df.rename(columns={
         'user_id': 'User ID',
