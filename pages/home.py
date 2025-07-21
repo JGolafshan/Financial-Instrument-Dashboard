@@ -6,26 +6,24 @@
     Author: Joshua David Golafshan
     Description: OmniQuant homepage with chunked trending display & backend refresh decoupled.
 """
-
 import time
 import yfinance as yf
 import streamlit as st
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from curl_cffi import requests
-from src.utils.utils import set_page_state
+
+from src.utils.utils import set_page_state, exchange_timezones
 
 CHUNK_SIZE = 5
 BACKEND_REFRESH_RATE = "600s"
-TRENDING_REFRESH = "120s"
-INDICES_REFRESH = "180s"
+INDICES_REFRESH = "20s"
 
 
 @st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
 def get_data():
     """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
     session = requests.Session(impersonate="chrome")
-
-    best_gainers = yf.screen("day_gainers", sortField='percentchange', sortAsc=True, session=session)
-    worst_losers = yf.screen("day_losers", sortField='percentchange', sortAsc=True, session=session)
 
     indices = yf.Tickers([
         '^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'
@@ -40,7 +38,7 @@ def get_data():
         except Exception as e:
             print(f"Error fetching data for {ticker.ticker}: {e}")
 
-    return indices_info, best_gainers, worst_losers
+    return indices_info
 
 
 def get_next_index(key, max_length):
@@ -69,22 +67,39 @@ def display_trending_items(screen_data, columns, start_index):
                 st.warning(f"Error loading stock: {e}")
 
 
-@st.fragment(run_every=TRENDING_REFRESH)
-def trending_display(gainers, losers):
-    st.subheader("Top Stocks Today")
-    gainer_index = get_next_index("gainer_index", len(gainers["quotes"]))
-    display_trending_items(gainers["quotes"], st.columns(CHUNK_SIZE), gainer_index)
-
-    st.subheader("Worst Stocks Today")
-    loser_index = get_next_index("loser_index", len(losers["quotes"]))
-    display_trending_items(losers["quotes"], st.columns(CHUNK_SIZE), loser_index)
-
-
 @st.fragment(run_every=INDICES_REFRESH)
 def indices_display(indices):
-    st.subheader("Global Indices")
     indices_index = get_next_index("indices_index", len(indices))
     display_trending_items(indices, st.columns(CHUNK_SIZE), indices_index)
+
+
+def display_timezones_items(timezone_data: dict, columns, start_index: int):
+    timezone_list = list(timezone_data.items())
+    for i, (region, info) in enumerate(timezone_list[start_index:start_index + CHUNK_SIZE]):
+        city = info["City"]
+        tz_name = info["Timezone"]
+
+        try:
+            now_dt = datetime.now(ZoneInfo(tz_name))
+            now_time = now_dt.strftime("%H:%M")
+            weekday = now_dt.strftime("%A")
+        except Exception as e:
+            now_time = f"Error"
+            weekday = "N/A"
+
+        label = f"{region} ({city}) - {weekday}" if city else f"{region} - {weekday}"
+
+        with columns[i]:
+            st.metric(
+                label=label,
+                value=now_time
+            )
+
+
+@st.experimental_fragment(run_every="5s")
+def timezone_display(timezone_data):
+    timezone_index = get_next_index("timezone_index", len(timezone_data))
+    display_timezones_items(timezone_data, st.columns(CHUNK_SIZE), timezone_index)
 
 
 def main():
@@ -107,13 +122,13 @@ def main():
         st.switch_page("pages/queries.py")
 
     st.markdown("---")
-
-    indices, gainers, losers = get_data()
-
-    indices_display(indices)
-    trending_display(gainers, losers)
+    st.subheader("Global Timezones")
+    timezone_display(exchange_timezones)
 
     st.markdown("---")
+    st.subheader("Global Indices")
+    indices = get_data()
+    indices_display(indices)
 
 
 if __name__ == "__main__":
