@@ -112,6 +112,7 @@ def display_summary_statistics(stock_data):
         st.metric("52-Week Low", f"${low_52_w:.2f}")
 
 
+@st.fragment(run_every=None)
 def show_bs_model():
     col1, col2 = st.columns(2, gap="medium")
     with col1:
@@ -161,6 +162,7 @@ def plot_historical_chart(stock_data):
     st.plotly_chart(historical_chart(stock_data), use_container_width=True)
 
 
+@st.fragment(run_every=None)
 def show_monte_carlo_page():
     st.subheader("📈 Monte Carlo Simulation ")
 
