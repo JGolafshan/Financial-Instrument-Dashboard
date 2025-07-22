@@ -27,7 +27,9 @@ def fetch_yahoo_data():
     """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
     session = requests.Session(impersonate="chrome")
 
-    indices = yf.Tickers(['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'])
+    indices = yf.Tickers(['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'],
+                         session
+                         )
 
     indices_info = []
     for ticker in indices.tickers.values():
@@ -37,8 +39,6 @@ def fetch_yahoo_data():
             time.sleep(0.2)
         except Exception as e:
             print(f"Error fetching data for {ticker.ticker}: {e}")
-
-    print(indices_info)
 
     return indices_info
 
