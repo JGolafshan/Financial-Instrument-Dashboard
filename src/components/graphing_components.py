@@ -55,7 +55,8 @@ def plot_option_heatmap(bs_model, num_of_contract, spot_range, vol_range, is_cal
             'Spot: %{x:.2f}<br>'
             'Vol: %{y:.2f}<br>'
             'Premium: %{z:.2f}<br>'
-            # 'Profit: %{customdata:.2f}<extra></extra>'
+            # 'Profit: %{customdata:.2f}'
+            '<extra></extra>'
         )
     ))
 

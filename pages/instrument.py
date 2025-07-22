@@ -68,28 +68,33 @@ def display_summary_statistics(stock_data):
 
 @st.fragment(run_every=None)
 def show_bs_model():
-    st.markdown("#### Black Scholes Model")
+    st.subheader("Black Scholes Model")
+    st.write("The Black-Scholes model is a mathematical equation used to calculate the fair price of financial instruments.")
 
     col1, col2 = st.columns([4, 6], gap="large")
 
     with col1:
-        st.subheader("Parameters")
+        st.markdown("##### Black Scholes Variables")
 
         input_column_1, input_column_2 = st.columns(2)
 
-        current_price = input_column_1.number_input(label="Current Price", value=st.session_state.get("current_price"), key="bs_price")
-        strike = input_column_2.number_input(label="Strike", value=st.session_state.get("bs_price")*1.05, key="bs_strike")
+        current_price = input_column_1.number_input(label="Current Price", value=st.session_state.get("current_price"),
+                                                    key="bs_price")
+        strike = input_column_2.number_input(label="Strike", value=st.session_state.get("bs_price") * 1.05,
+                                             key="bs_strike")
         volatility = input_column_1.number_input(label="Volatility", value=0.2, key="bs_volatility")
         interest_rate = input_column_2.number_input(label="Interest rate", value=0.05, key="bs_interest_rate")
         time_to_maturity = input_column_1.number_input(label="Time to maturity", value=1, key="bs_time_to_maturity")
         num_of_contracts = input_column_2.number_input(label="Number of Contracts", value=1, key="num_of_contracts")
 
-        st.markdown("---")
+        st.markdown("##### Heatmap Variation ")
         input_column_12, input_column_22 = st.columns(2)
         vol_min = input_column_12.number_input('Min Volatility', 0.01, 1.0, value=volatility * 0.5, step=0.01)
         vol_max = input_column_12.number_input('Max Volatility', 0.01, 1.0, value=volatility * 1.5, step=0.01)
-        spot_min = input_column_22.number_input('Min Spot Price', 0.01, value=st.session_state.get("bs_strike") * 0.8, step=0.01)
-        spot_max = input_column_22.number_input('Max Spot Price', 0.01, value=st.session_state.get("bs_strike") * 1.2, step=0.01)
+        spot_min = input_column_22.number_input('Min Spot Price', 0.01, value=st.session_state.get("bs_strike") * 0.8,
+                                                step=0.01)
+        spot_max = input_column_22.number_input('Max Spot Price', 0.01, value=st.session_state.get("bs_strike") * 1.2,
+                                                step=0.01)
 
     with col2:
         st.subheader("Output")
