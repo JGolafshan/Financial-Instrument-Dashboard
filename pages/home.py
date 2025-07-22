@@ -46,8 +46,8 @@ def fetch_yahoo_data():
 def get_next_chunk_index(session_key: str, max_len: int, chunk_size: int = CHUNK_SIZE) -> int:
     """Cycle the index forward by chunk size, wrap around if at end."""
     index = st.session_state.get(session_key, 0)
-    next_index = (index + chunk_size) % max_len
-    st.session_state[session_key] = next_index
+    index = index + chunk_size if index + chunk_size < max_len else 0
+    st.session_state[session_key] = index
     return index
 
 
