@@ -7,16 +7,13 @@
     Description: all individual stock (ticker relate functions)
 """
 import orjson
-import datetime
 import numpy as np
 import streamlit as st
-from zoneinfo import ZoneInfo
-from streamlit_javascript import st_javascript
 from src.utils.utils import set_page_state, yahoo_data
 from src.components.simple_components import option_metric
 from src.core.black_scholes_model import BlackScholesModel
 from src.core.monte_carlo_simulation import MonteCarloSimulation
-from src.components.graphing_components import plot_heatmap, monte_carlo_chart, historical_chart
+from src.components.graphing_components import plot_option_heatmap, monte_carlo_chart, historical_chart
 
 # Load Components
 set_page_state("pages/instrument.py")
@@ -33,44 +30,6 @@ def get_instrument_data(symbol: str):
     }
 
 
-@st.cache_data(show_spinner="Loading market data...")
-def load_market_data(symbol: str):
-    """Load and clean market data from JSON file."""
-    with open("static/market_data.json") as f:
-        data = orjson.loads(f.read())
-        return data[symbol]
-
-
-def calculate_user_time():
-    timezone = st_javascript("""await (async () => {
-                const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                console.log(userTimezone)
-                return userTimezone
-    })().then(returnValue => returnValue)""", "casdsdslulate_user_time")
-    user_timedate = datetime.datetime.now(tz=ZoneInfo(timezone))
-    return user_timedate
-
-
-def calculate_market_time(exchange_data: dict):
-    pass
-
-
-def market__status():
-    pass
-
-
-def market_status(is_market_open: bool):
-    if is_market_open:
-        return st.metric("Market closes in", f"{'~6 Hours'}")
-    return st.metric("Market opens in ", f"{'~12 Hours'}")
-
-
-def instrument_change(is_market_open: bool):
-    if is_market_open:
-        return st.metric("Current Price", f"${178.42}", f"{1.03:+.2f}%")
-    return st.metric("Previous Day Change", f"${178.42}", f"{1.03:+.2f}%")
-
-
 def display_instrument(stock_info):
     st.html(f"""
                 <div style="display:flex; align-items: baseline;">
@@ -82,9 +41,10 @@ def display_instrument(stock_info):
 
 def calculate_stock_summary_statistics(stock_data):
     latest_price = stock_data.iloc[0]["Close"]
+
+    st.session_state["current_price"] = latest_price // 1
+
     previous_year_price = stock_data.iloc[252]["Close"] if len(stock_data) > 252 else stock_data.iloc[0]["Close"]
-    print(latest_price)
-    print(previous_year_price)
     price_diff = latest_price - previous_year_price
     percent_diff = (price_diff / previous_year_price)
     latest_close_price = stock_data.iloc[-1]["Close"]
@@ -98,10 +58,6 @@ def display_summary_statistics(stock_data):
     latest_close_price, price_diff, percent_diff, high_52_w, low_52_w = calculate_stock_summary_statistics(stock_data)
     col2, col3, col4, col5 = st.columns([1, 1, 1, 1])
 
-    # with col0:
-    #     instrument_change(False)
-    # with col1:
-    #     market_status(True)
     with col2:
         st.metric("Close Price", f"${latest_close_price:.2f}")
     with col3:
@@ -114,48 +70,66 @@ def display_summary_statistics(stock_data):
 
 @st.fragment(run_every=None)
 def show_bs_model():
-    col1, col2 = st.columns(2, gap="medium")
+    st.markdown("#### Black Scholes Model")
+
+    col1, col2 = st.columns([4, 6], gap="large")
+
     with col1:
-        st.markdown("#### Option Pricing Parameters")
+        st.subheader("Parameters")
+
         input_column_1, input_column_2 = st.columns(2)
 
-        current_price = input_column_1.number_input(label="Current Price",
-                                                    value=st.session_state.get("bs_current_price", 40),
-                                                    key="bs_current_price")
-        strike = input_column_1.number_input(label="Strike", value=45, key="bs_strike")
-        volatility = input_column_2.number_input(label="Volatility", value=0.2, key="bs_volatility")
+        current_price = input_column_1.number_input(label="Current Price", value=st.session_state.get("current_price"), key="bs_price")
+        strike = input_column_2.number_input(label="Strike", value=st.session_state.get("bs_price")*1.05, key="bs_strike")
+        volatility = input_column_1.number_input(label="Volatility", value=0.2, key="bs_volatility")
         interest_rate = input_column_2.number_input(label="Interest rate", value=0.05, key="bs_interest_rate")
-        time_to_maturity = st.number_input(label="Time to maturity", value=1, key="bs_time_to_maturity")
+        time_to_maturity = input_column_1.number_input(label="Time to maturity", value=1, key="bs_time_to_maturity")
+        num_of_contracts = input_column_2.number_input(label="Number of Contracts", value=1, key="num_of_contracts")
 
-    bs_model = BlackScholesModel(time_to_maturity, strike, current_price, volatility, interest_rate)
-    call_price, put_price = bs_model.calculate_prices()
-    greeks = bs_model.calculate_greeks()
+        st.markdown("---")
+        input_column_12, input_column_22 = st.columns(2)
+        vol_min = input_column_12.number_input('Min Volatility', 0.01, 1.0, value=volatility * 0.5, step=0.01)
+        vol_max = input_column_12.number_input('Max Volatility', 0.01, 1.0, value=volatility * 1.5, step=0.01)
+        spot_min = input_column_22.number_input('Min Spot Price', 0.01, value=st.session_state.get("bs_strike") * 0.8, step=0.01)
+        spot_max = input_column_22.number_input('Max Spot Price', 0.01, value=st.session_state.get("bs_strike") * 1.2, step=0.01)
 
     with col2:
-        st.markdown(f"#### Computed Prices: Gamma={greeks["gamma"]:.2f}, Vega={greeks["vega"]:.2f}")
-        st.html(option_metric(css_style="metric-call", option_type="Call Value", option_price=call_price,
-                              option_delta=greeks["call_delta"], option_theta=greeks["call_theta"],
-                              option_rho=greeks["call_rho"]))
-        st.html(option_metric(css_style="metric-put", option_type="Put Value", option_price=put_price,
-                              option_delta=greeks["put_delta"], option_theta=greeks["put_theta"],
-                              option_rho=greeks["put_rho"]))
+        st.subheader("Output")
 
-    st.markdown("---")
-    st.subheader("🎯 Options Price - Interactive Heatmap")
+        bs_model = BlackScholesModel(time_to_maturity, strike, current_price, volatility, interest_rate)
+        call_price, put_price = bs_model.calculate_prices()
+        greeks = bs_model.calculate_greeks()
 
-    with st.expander("⚙️ Heatmap Settings", expanded=False):
-        c1, c2 = st.columns(2)
-        vol_min = c1.slider('Min Volatility', 0.01, 1.0, value=volatility * 0.5, step=0.01)
-        vol_max = c1.slider('Max Volatility', 0.01, 1.0, value=volatility * 1.5, step=0.01)
-        spot_min = c2.number_input('Min Spot Price', 0.01, value=current_price * 0.8, step=0.01)
-        spot_max = c2.number_input('Max Spot Price', 0.01, value=current_price * 1.2, step=0.01)
+        if strike == current_price:
+            st.info("Strike equals current price — no Call or Put valuation shown.")
+            return
+
+        is_call = strike > current_price
+        option_type = greeks["call"] if is_call else greeks["put"]
+        css_type = "metric-call" if is_call else "metric-put"
+        option_type_name = "Call Value" if is_call else "Put Value"
+        price = st.session_state.get("bs_current_price", 40)
+
+        st.html(option_metric(
+            css_style=css_type,
+            option_type=option_type_name,
+            option_price=call_price,
+            option_delta=option_type["delta"],
+            option_theta=option_type["theta"],
+            option_rho=option_type["rho"],
+            option_gamma=greeks["gamma"],
+            option_vega=greeks["vega"]
+        ))
+
         spot_range = np.linspace(spot_min, spot_max, 10)
         vol_range = np.linspace(vol_min, vol_max, 10)
 
-    fig_call, fig_put = plot_heatmap(bs_model, spot_range, vol_range, strike)
-    heat_col1, heat_col2 = st.columns(2, gap="medium")
-    heat_col1.plotly_chart(fig_call, use_container_width=True, config={'displayModeBar': False})
-    heat_col2.plotly_chart(fig_put, use_container_width=True, config={'displayModeBar': False})
+        if is_call:
+            option_fig = plot_option_heatmap(bs_model, num_of_contracts, spot_range, vol_range, True)
+            st.plotly_chart(option_fig, use_container_width=True, config={'displayModeBar': False})
+        else:
+            option_fig = plot_option_heatmap(bs_model, num_of_contracts, spot_range, vol_range, False)
+            st.plotly_chart(option_fig, use_container_width=True, config={'displayModeBar': False})
 
 
 def plot_historical_chart(stock_data):
@@ -202,11 +176,10 @@ def show_info(instrument_data):
 if __name__ == "__main__":
     if instrument_code and instrument_code != "NONE":
         instrument_data = get_instrument_data(instrument_code)
-        if instrument_data["info"]["trailingPegRatio"] is None: # TODO this should be improved
+        if instrument_data["info"]["trailingPegRatio"] is None:  # TODO this should be improved
             st.session_state["search_warning"] = f"Instrument {instrument_code} not found."
             st.switch_page("pages/search.py")
         else:
             show_info(instrument_data)
     else:
         st.switch_page("pages/search.py")
-
