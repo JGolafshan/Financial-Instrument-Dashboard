@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Date: 04/04/2024
+Author: Joshua David Golafshan
+Description: OmniQuant homepage with chunked trending display & backend refresh decoupled.
+"""
 
-"""
-    Date: 04/04/2024
-    Author: Joshua David Golafshan
-    Description: OmniQuant homepage with chunked trending display & backend refresh decoupled.
-"""
 import time
-import yfinance as yf
-import streamlit as st
 from datetime import datetime
 from zoneinfo import ZoneInfo
+
+import yfinance as yf
+import streamlit as st
 from curl_cffi import requests
+
 from src.utils.utils import set_page_state
 from src.utils.static_values import exchange_timezones
 
@@ -21,85 +23,81 @@ INDICES_REFRESH = "20s"
 
 
 @st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
-def get_data():
-    """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
+def fetch_index_data():
+    """Fetch major indices from Yahoo Finance."""
     session = requests.Session(impersonate="chrome")
+    symbols = ['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO']
+    indices = yf.Tickers(symbols, session=session)
 
-    indices = yf.Tickers([
-        '^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'
-    ], session=session)
-
-    indices_info = []
+    results = []
     for ticker in indices.tickers.values():
         try:
             info = ticker.info
-            indices_info.append(info)
+            results.append(info)
             time.sleep(0.2)
         except Exception as e:
-            print(f"Error fetching data for {ticker.ticker}: {e}")
+            print(f"[Error] {ticker.ticker}: {e}")
+    return results
 
-    return indices_info
 
-
-def get_next_index(key, max_length):
-    """Cycles index in steps of CHUNK_SIZE and resets when needed."""
-    index = st.session_state.get(key, 0)
-    index = index + CHUNK_SIZE if index + CHUNK_SIZE < max_length else 0
-    st.session_state[key] = index
+def get_next_chunk_index(session_key: str, max_len: int, chunk_size: int = CHUNK_SIZE) -> int:
+    """Cycle the index forward by chunk size, wrap around if at end."""
+    index = st.session_state.get(session_key, 0)
+    next_index = (index + chunk_size) % max_len
+    st.session_state[session_key] = next_index
     return index
 
 
-def display_trending_items(screen_data, columns, start_index):
-    for i, quote in enumerate(screen_data[start_index:start_index + CHUNK_SIZE]):
+def display_chunked_items(data, columns, start_index, render_fn):
+    """Generic display function for chunked metric rendering."""
+    chunk = data[start_index:start_index + CHUNK_SIZE]
+    for i, item in enumerate(chunk):
         with columns[i]:
             try:
-                company_name = quote.get("longName") or quote.get("displayName", "Unknown")
-                symbol = quote["symbol"]
-                price = quote["regularMarketPrice"]
-                change = quote["regularMarketChangePercent"]
-                st.metric(
-                    border=True,
-                    label=f"{company_name} ({symbol})",
-                    value=f"${price:.2f}",
-                    delta=f"{change:.2f}%"
-                )
+                render_fn(item)
             except Exception as e:
-                st.warning(f"Error loading stock: {e}")
+                st.warning(f"Render error: {e}")
+
+
+def render_stock_metric(quote):
+    """Render a single stock metric card."""
+    name = quote.get("longName") or quote.get("displayName", "Unknown")
+    symbol = quote["symbol"]
+    price = quote["regularMarketPrice"]
+    change = quote["regularMarketChangePercent"]
+    st.metric(border=True, label=f"{name} ({symbol})", value=f"${price:.2f}", delta=f"{change:.2f}%")
+
+
+def render_timezone_metric(item):
+    """Render a single timezone metric card."""
+    region, info = item
+    city, tz_name = info["City"], info["Timezone"]
+
+    try:
+        now = datetime.now(ZoneInfo(tz_name))
+        time_str = now.strftime("%H:%M")
+        weekday = now.strftime("%A")
+    except Exception:
+        time_str = "Error"
+        weekday = "N/A"
+
+    label = f"{region} ({city}) - {weekday}" if city else f"{region} - {weekday}"
+    st.metric(label=label, value=time_str)
 
 
 @st.experimental_fragment(run_every=INDICES_REFRESH)
-def indices_display(indices):
-    indices_index = get_next_index("indices_index", len(indices))
-    display_trending_items(indices, st.columns(CHUNK_SIZE), indices_index)
-
-
-def display_timezones_items(timezone_data: dict, columns, start_index: int):
-    timezone_list = list(timezone_data.items())
-    for i, (region, info) in enumerate(timezone_list[start_index:start_index + CHUNK_SIZE]):
-        city = info["City"]
-        tz_name = info["Timezone"]
-
-        try:
-            now_dt = datetime.now(ZoneInfo(tz_name))
-            now_time = now_dt.strftime("%H:%M")
-            weekday = now_dt.strftime("%A")
-        except Exception as e:
-            now_time = f"Error"
-            weekday = "N/A"
-
-        label = f"{region} ({city}) - {weekday}" if city else f"{region} - {weekday}"
-
-        with columns[i]:
-            st.metric(
-                label=label,
-                value=now_time
-            )
+def display_indices(indices_data):
+    start_idx = get_next_chunk_index("indices_index", len(indices_data))
+    cols = st.columns(CHUNK_SIZE)
+    display_chunked_items(indices_data, cols, start_idx, render_stock_metric)
 
 
 @st.experimental_fragment(run_every="8s")
-def timezone_display(timezone_data):
-    timezone_index = get_next_index("timezone_index", len(timezone_data))
-    display_timezones_items(timezone_data, st.columns(CHUNK_SIZE), timezone_index)
+def display_timezones_fragment(data):
+    start_idx = get_next_chunk_index("timezone_index", len(data))
+    cols = st.columns(CHUNK_SIZE)
+    timezone_items = list(data.items())
+    display_chunked_items(timezone_items, cols, start_idx, render_timezone_metric)
 
 
 def main():
@@ -123,12 +121,12 @@ def main():
 
     st.markdown("---")
     st.subheader("Global Timezones")
-    timezone_display(exchange_timezones)
+    display_timezones_fragment(exchange_timezones)
 
     st.markdown("---")
     st.subheader("Global Indices")
-    indices = get_data()
-    indices_display(indices)
+    indices = fetch_index_data()
+    display_indices(indices)
 
 
 if __name__ == "__main__":
