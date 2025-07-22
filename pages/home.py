@@ -23,21 +23,24 @@ INDICES_REFRESH = "20s"
 
 
 @st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
-def fetch_index_data():
-    """Fetch major indices from Yahoo Finance."""
+def fetch_yahoo_data():
+    """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
     session = requests.Session(impersonate="chrome")
-    symbols = ['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO']
-    indices = yf.Tickers(symbols, session=session)
 
-    results = []
+    indices = yf.Tickers([
+        '^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'
+    ], session=session)
+
+    indices_info = []
     for ticker in indices.tickers.values():
         try:
             info = ticker.info
-            results.append(info)
+            indices_info.append(info)
             time.sleep(0.2)
         except Exception as e:
-            print(f"[Error] {ticker.ticker}: {e}")
-    return results
+            print(f"Error fetching data for {ticker.ticker}: {e}")
+
+    return indices_info
 
 
 def get_next_chunk_index(session_key: str, max_len: int, chunk_size: int = CHUNK_SIZE) -> int:
@@ -85,7 +88,7 @@ def render_timezone_metric(item):
     st.metric(label=label, value=time_str)
 
 
-@st.experimental_fragment(run_every=INDICES_REFRESH)
+@st.fragment(run_every=INDICES_REFRESH)
 def display_indices(indices_data):
     start_idx = get_next_chunk_index("indices_index", len(indices_data))
     cols = st.columns(CHUNK_SIZE)
@@ -125,7 +128,7 @@ def main():
 
     st.markdown("---")
     st.subheader("Global Indices")
-    indices = fetch_index_data()
+    indices = fetch_yahoo_data()
     display_indices(indices)
 
 
