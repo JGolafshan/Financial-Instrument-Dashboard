@@ -27,20 +27,23 @@ def fetch_yahoo_data():
     """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
     session = requests.Session(impersonate="chrome")
 
-    indices = yf.Tickers(['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'],
-                         session
-                         )
+    try:
+        indices = yf.Tickers(['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'],
+                             session
+                             )
 
-    indices_info = []
-    for ticker in indices.tickers.values():
-        try:
-            info = ticker.info
-            indices_info.append(info)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error fetching data for {ticker.ticker}: {e}")
+        indices_info = []
+        for ticker in indices.tickers.values():
+            try:
+                info = ticker.info
+                indices_info.append(info)
+                time.sleep(0.2)
+            except Exception as e:
+                print(f"Error fetching data for {ticker.ticker}: {e}")
 
-    return indices_info
+        return indices_info
+    except e:
+        st.write(f"Error fetching data: {e}")
 
 
 def get_next_chunk_index(session_key: str, max_len: int, chunk_size: int = CHUNK_SIZE) -> int:
