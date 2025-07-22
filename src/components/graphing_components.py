@@ -83,24 +83,55 @@ def plot_heatmap(bs_model, spot_range, vol_range, strike):
 
 
 def historical_chart(stock_history):
-    candlestick_chart = go.Figure(data=[
-        go.Candlestick(x=stock_history.index, open=stock_history['Open'], high=stock_history['High'],
-                       low=stock_history['Low'], close=stock_history['Close'])])
-    candlestick_chart.update_xaxes(
-        rangeslider_visible=True,
+    x = stock_history.index
+    y = stock_history["Close"]
+
+    fig = go.Figure()
+
+    # Area under line with alpha
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=y,
+        mode="lines",
+        name="Close Price",
+        line=dict(color="rgba(0, 128, 255, 1)", width=2),
+        fill="tozeroy",
+        fillcolor="rgba(0, 128, 255, 0.2)",  # semi-transparent fade
+        hovertemplate="Date: %{x}<br>Price: %{y:$,.2f}<extra></extra>"
+    ))
+
+    # Range selector
+    fig.update_xaxes(
         rangeselector=dict(
             buttons=list([
                 dict(count=1, label="1m", step="month", stepmode="backward"),
                 dict(count=6, label="6m", step="month", stepmode="backward"),
                 dict(count=1, label="YTD", step="year", stepmode="todate"),
                 dict(count=1, label="1y", step="year", stepmode="backward"),
-                dict(step="all")
+                dict(step="all", label="All")
             ])
-        )
+        ),
+        rangeslider_visible=False,
+        title="Date"
     )
-    candlestick_chart.update_layout(xaxis_rangeslider_visible=False)
 
-    return candlestick_chart
+    # Y-axis auto-range
+    fig.update_yaxes(
+        autorange=True,
+        fixedrange=False,
+        title="Price (USD)"
+    )
+
+    # Layout styling
+    fig.update_layout(
+        template="plotly_white",
+        hovermode="x unified",
+        margin=dict(t=20, l=0, r=0, b=0),
+        height=500,
+        showlegend=False
+    )
+
+    return fig
 
 
 def monte_carlo_chart(simulation_dataframe):
@@ -145,16 +176,16 @@ def monte_carlo_chart(simulation_dataframe):
     # Customize the layout
     fig.update_layout(
         title='Monte Carlo Simulations with Historical Data & Confidence Interval',
-        xaxis=dict(title='Date', tickangle=45, showgrid=True, tickformat='%b %d, %Y', gridcolor='rgb(100, 100, 100)'),
-        yaxis=dict(title='Price', showgrid=True, zeroline=False, gridcolor='rgb(100, 100, 100)'),
-        template='plotly_dark',
+        xaxis=dict(title='Date', tickangle=45, showgrid=True, tickformat='%b %d, %Y', gridcolor='rgb(49,51,63)'),
+        yaxis=dict(title='Price', showgrid=True, zeroline=False, gridcolor='rgb(49,51,63)'),
+        template='plotly_white',
         showlegend=True,
         hovermode='closest',
         margin=dict(l=50, r=50, t=50, b=50),
         legend=dict(x=0.5, y=-0.1, traceorder='normal', orientation='h', bgcolor='rgba(255, 255, 255, 0.6)',
                     bordercolor="rgba(255, 255, 255, 0.3)", borderwidth=1, xanchor='center', yanchor='bottom'),
         hoverlabel=dict(bgcolor="white", font_size=14, font_family="Arial", font_color="black"),
-        paper_bgcolor='rgb(14, 17, 23)',
-        plot_bgcolor='rgb(14, 17, 23)',
+        paper_bgcolor='rgb(14, 17, 23, 0)',
+        plot_bgcolor='rgb(14, 17, 23, 0)',
     )
     return fig
