@@ -31,6 +31,5 @@ def main():
             custom_search_bar("form_container", "big_search", [0.9, 0.1, 0.1])
 
 
-
 if __name__ == "__main__":
     main()

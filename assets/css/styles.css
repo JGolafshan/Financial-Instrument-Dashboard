@@ -1,5 +1,5 @@
 .stMainBlockContainer {
-        padding-top: 3rem;
+        padding-top: 1rem;
         max-width: 1400px;
 }
 
@@ -44,6 +44,8 @@
     color: inherit;
 }
 
+
+/* USER ID */
 .floating-user-id {
     z-index: 10000;
     position: fixed;
@@ -81,14 +83,11 @@
     transition: opacity 0.2s ease;
 }
 
-/* 🧠 This hides the hint ONLY when parent is hovered */
 .floating-user-id:hover .reveal-hint {
     opacity: 0;
     display: none;
     pointer-events: none;
 }
-
-
 
 /* Table ToolBar */
 .stElementToolbar {
@@ -103,7 +102,6 @@
     align-items: center;
     flex-direction: row;
     width: 100%;
-    max-width: 800px;
     box-sizing: border-box;
 }
 
@@ -121,7 +119,7 @@
     max-width: 800px;
 }
 
-/* Metric item (label + value) styling */
+
 .metric-item {
     text-align: center;
     flex: 1 1 100px;
@@ -131,7 +129,6 @@
 .metric-value {
     font-size: 1.6rem;
     font-weight: 600;
-    color: white;
     margin-top: 5px;
     line-height: 1.4;
 }
@@ -140,17 +137,16 @@
 .metric-label {
     font-size: 1.1rem;
     font-weight: 500;
-    color: light-grey;
     margin-bottom: 10px;
 }
 
-/* Call and Put specific background colors */
+/* Call and Put Metric Styling */
 .metric-call {
-    background-color: green;
-    color: white;
+    background-color: #ebfaed;
+    color: #31333F;
 }
 
 .metric-put {
-    background-color: red;
-    color: white;
+    background-color: #ffece8;
+    color: #31333F;
 }

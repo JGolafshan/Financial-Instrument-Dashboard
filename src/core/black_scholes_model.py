@@ -78,14 +78,18 @@ class BlackScholesModel:
         put_rho = -K * T * exp(-r * T) * norm.cdf(-d2)
 
         return {
-            "call_delta": call_delta,
-            "put_delta": put_delta,
+            "call": {
+                "delta": call_delta,
+                "theta": call_theta,
+                "rho": call_rho
+             },
+            "put": {
+                "delta": put_delta,
+                "theta": put_theta,
+                "rho": put_rho,
+            },
             "gamma": gamma,
             "vega": vega,
-            "call_theta": call_theta,
-            "put_theta": put_theta,
-            "call_rho": call_rho,
-            "put_rho": put_rho,
         }
 
     def calculate_prices(self):

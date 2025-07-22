@@ -22,7 +22,7 @@ def user_component():
 
 
 def option_metric(css_style: str, option_type: str, option_price: float, option_delta: float, option_theta: float,
-                  option_rho: float):
+                  option_rho: float, option_gamma: float, option_vega: float):
     return f"""
         <div class="metric-container">
             <div class="{css_style}">
@@ -41,6 +41,14 @@ def option_metric(css_style: str, option_type: str, option_price: float, option_
                 <div class="metric-item">
                     <div class="metric-label">Rho</div>
                     <div class="metric-value">{option_rho:.2f}</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Gamma</div>
+                    <div class="metric-value">{option_gamma:.2f}</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Vega</div>
+                    <div class="metric-value">{option_vega:.2f}</div>
                 </div>
             </div>
         </div>
