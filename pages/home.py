@@ -96,7 +96,7 @@ def display_timezones_items(timezone_data: dict, columns, start_index: int):
             )
 
 
-@st.experimental_fragment(run_every="5s")
+@st.experimental_fragment(run_every="8s")
 def timezone_display(timezone_data):
     timezone_index = get_next_index("timezone_index", len(timezone_data))
     display_timezones_items(timezone_data, st.columns(CHUNK_SIZE), timezone_index)
