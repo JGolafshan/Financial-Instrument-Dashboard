@@ -12,8 +12,8 @@ import streamlit as st
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from curl_cffi import requests
-
-from src.utils.utils import set_page_state, exchange_timezones
+from src.utils.utils import set_page_state
+from src.utils.static_values import exchange_timezones
 
 CHUNK_SIZE = 5
 BACKEND_REFRESH_RATE = "600s"
@@ -96,7 +96,7 @@ def display_timezones_items(timezone_data: dict, columns, start_index: int):
             )
 
 
-@st.experimental_fragment(run_every="5s")
+@st.fragment(run_every="5s")
 def timezone_display(timezone_data):
     timezone_index = get_next_index("timezone_index", len(timezone_data))
     display_timezones_items(timezone_data, st.columns(CHUNK_SIZE), timezone_index)
