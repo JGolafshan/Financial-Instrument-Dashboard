@@ -40,10 +40,8 @@ def display_instrument(stock_info):
 
 
 def calculate_stock_summary_statistics(stock_data):
-    latest_price = stock_data.iloc[0]["Close"]
-
+    latest_price = stock_data.iloc[-1]["Close"]
     st.session_state["current_price"] = latest_price // 1
-
     previous_year_price = stock_data.iloc[252]["Close"] if len(stock_data) > 252 else stock_data.iloc[0]["Close"]
     price_diff = latest_price - previous_year_price
     percent_diff = (price_diff / previous_year_price)
@@ -108,7 +106,6 @@ def show_bs_model():
         option_type = greeks["call"] if is_call else greeks["put"]
         css_type = "metric-call" if is_call else "metric-put"
         option_type_name = "Call Value" if is_call else "Put Value"
-        price = st.session_state.get("bs_current_price", 40)
 
         st.html(option_metric(
             css_style=css_type,
