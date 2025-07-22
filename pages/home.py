@@ -1,35 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """
-    Date: 04/04/2024
-    Author: Joshua David Golafshan
-    Description: OmniQuant homepage with chunked trending display & backend refresh decoupled.
+Date: 04/04/2024
+Author: Joshua David Golafshan
+Description: OmniQuant homepage with chunked trending display & backend refresh decoupled.
 """
 
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 import yfinance as yf
 import streamlit as st
 from curl_cffi import requests
+
 from src.utils.utils import set_page_state
+from src.utils.static_values import exchange_timezones
 
 CHUNK_SIZE = 5
 BACKEND_REFRESH_RATE = "600s"
-TRENDING_REFRESH = "120s"
-INDICES_REFRESH = "180s"
+INDICES_REFRESH = "20s"
 
 
 @st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
-def get_data():
+def fetch_yahoo_data():
     """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
     session = requests.Session(impersonate="chrome")
 
-    best_gainers = yf.screen("day_gainers", sortField='percentchange', sortAsc=True, session=session)
-    worst_losers = yf.screen("day_losers", sortField='percentchange', sortAsc=True, session=session)
-
-    indices = yf.Tickers([
-        '^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'
-    ], session=session)
+    indices = yf.Tickers(['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'])
 
     indices_info = []
     for ticker in indices.tickers.values():
@@ -40,51 +38,69 @@ def get_data():
         except Exception as e:
             print(f"Error fetching data for {ticker.ticker}: {e}")
 
-    return indices_info, best_gainers, worst_losers
+    print(indices_info)
+
+    return indices_info
 
 
-def get_next_index(key, max_length):
-    """Cycles index in steps of CHUNK_SIZE and resets when needed."""
-    index = st.session_state.get(key, 0)
-    index = index + CHUNK_SIZE if index + CHUNK_SIZE < max_length else 0
-    st.session_state[key] = index
+def get_next_chunk_index(session_key: str, max_len: int, chunk_size: int = CHUNK_SIZE) -> int:
+    """Cycle the index forward by chunk size, wrap around if at end."""
+    index = st.session_state.get(session_key, 0)
+    next_index = (index + chunk_size) % max_len
+    st.session_state[session_key] = next_index
     return index
 
 
-def display_trending_items(screen_data, columns, start_index):
-    for i, quote in enumerate(screen_data[start_index:start_index + CHUNK_SIZE]):
+def display_chunked_items(data, columns, start_index, render_fn):
+    """Generic display function for chunked metric rendering."""
+    chunk = data[start_index:start_index + CHUNK_SIZE]
+    for i, item in enumerate(chunk):
         with columns[i]:
             try:
-                company_name = quote.get("longName") or quote.get("displayName", "Unknown")
-                symbol = quote["symbol"]
-                price = quote["regularMarketPrice"]
-                change = quote["regularMarketChangePercent"]
-                st.metric(
-                    border=True,
-                    label=f"{company_name} ({symbol})",
-                    value=f"${price:.2f}",
-                    delta=f"{change:.2f}%"
-                )
+                render_fn(item)
             except Exception as e:
-                st.warning(f"Error loading stock: {e}")
+                st.warning(f"Render error: {e}")
 
 
-@st.fragment(run_every=TRENDING_REFRESH)
-def trending_display(gainers, losers):
-    st.subheader("Top Stocks Today")
-    gainer_index = get_next_index("gainer_index", len(gainers["quotes"]))
-    display_trending_items(gainers["quotes"], st.columns(CHUNK_SIZE), gainer_index)
+def render_stock_metric(quote):
+    """Render a single stock metric card."""
+    name = quote.get("longName") or quote.get("displayName", "Unknown")
+    symbol = quote["symbol"]
+    price = quote["regularMarketPrice"]
+    change = quote["regularMarketChangePercent"]
+    st.metric(border=True, label=f"{name} ({symbol})", value=f"${price:.2f}", delta=f"{change:.2f}%")
 
-    st.subheader("Worst Stocks Today")
-    loser_index = get_next_index("loser_index", len(losers["quotes"]))
-    display_trending_items(losers["quotes"], st.columns(CHUNK_SIZE), loser_index)
+
+def render_timezone_metric(item):
+    """Render a single timezone metric card."""
+    region, info = item
+    city, tz_name = info["City"], info["Timezone"]
+
+    try:
+        now = datetime.now(ZoneInfo(tz_name))
+        time_str = now.strftime("%H:%M")
+        weekday = now.strftime("%A")
+    except Exception:
+        time_str = "Error"
+        weekday = "N/A"
+
+    label = f"{region} ({city}) - {weekday}" if city else f"{region} - {weekday}"
+    st.metric(label=label, value=time_str)
 
 
 @st.fragment(run_every=INDICES_REFRESH)
-def indices_display(indices):
-    st.subheader("Global Indices")
-    indices_index = get_next_index("indices_index", len(indices))
-    display_trending_items(indices, st.columns(CHUNK_SIZE), indices_index)
+def display_indices(indices_data):
+    start_idx = get_next_chunk_index("indices_index", len(indices_data))
+    cols = st.columns(CHUNK_SIZE)
+    display_chunked_items(indices_data, cols, start_idx, render_stock_metric)
+
+
+@st.experimental_fragment(run_every="8s")
+def display_timezones_fragment(data):
+    start_idx = get_next_chunk_index("timezone_index", len(data))
+    cols = st.columns(CHUNK_SIZE)
+    timezone_items = list(data.items())
+    display_chunked_items(timezone_items, cols, start_idx, render_timezone_metric)
 
 
 def main():
@@ -107,13 +123,13 @@ def main():
         st.switch_page("pages/queries.py")
 
     st.markdown("---")
-
-    indices, gainers, losers = get_data()
-
-    indices_display(indices)
-    trending_display(gainers, losers)
+    st.subheader("Global Timezones")
+    display_timezones_fragment(exchange_timezones)
 
     st.markdown("---")
+    st.subheader("Global Indices")
+    indices = fetch_yahoo_data()
+    display_indices(indices)
 
 
 if __name__ == "__main__":
