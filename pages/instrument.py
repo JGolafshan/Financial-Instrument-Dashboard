@@ -40,8 +40,10 @@ def display_instrument(stock_info):
 
 
 def calculate_stock_summary_statistics(stock_data):
-    latest_price = stock_data.iloc[-1]["Close"]
-    st.session_state["current_price"] = latest_price // 1
+    latest_price = stock_data.iloc[0]["Close"]
+
+    st.session_state["current_price"] = stock_data.iloc[-1]["Close"] // 1
+
     previous_year_price = stock_data.iloc[252]["Close"] if len(stock_data) > 252 else stock_data.iloc[0]["Close"]
     price_diff = latest_price - previous_year_price
     percent_diff = (price_diff / previous_year_price)
