@@ -116,7 +116,7 @@ def main():
     """)
     st.markdown("""
         Search for stocks with interactive charts, financial metrics, and option pricing tools. 
-        Or review user-generated queries with filters for user ID, date, and original parameters.
+        Or review user-generated queries with filters for user ID, date, and other related parameters.
     """)
 
     btn1, btn2, _ = st.columns([0.15, 0.15, 0.7])

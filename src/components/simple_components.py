@@ -9,9 +9,7 @@
 import streamlit as st
 
 
-def user_component():
-    session_id = st.session_state.get("user_id", "USER-123456")
-
+def user_component(session_id):
     st.markdown(f"""
         <div class="floating-user-id" onmouseenter="revealSessionID()">
             <span>🆔</span>

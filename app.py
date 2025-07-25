@@ -16,16 +16,6 @@ from pymongo.server_api import ServerApi
 from src.components.simple_components import user_component
 from src.utils.utils import set_root_css
 
-with st.empty():
-    def get_cookie_manager():
-        return stx.CookieManager()
-
-
-    cookie_manager = get_cookie_manager()
-    user_id = cookie_manager.get("user_id") or str(uuid.uuid4())
-    cookie_manager.set("user_id", user_id)
-    st.session_state["user_id"] = user_id
-
 
 @st.cache_resource
 def get_db_connection():
@@ -50,15 +40,23 @@ def inject_css_files():
     st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
 
 
-@st.cache_resource
-def inject_user_id_component():
-    return user_component()
-
-
 def main():
     st.session_state["db_client"] = get_db_connection()
 
-    inject_user_id_component()
+    cookie_manager = stx.CookieManager()
+    cookies = cookie_manager.get_all()
+
+    # Block Streamlit if cookies are none - wait for it to populate
+    if cookies is None:
+        st.stop()
+
+    user_id = cookies.get("user_id")
+    if not user_id:
+        user_id = str(uuid.uuid4())
+        cookie_manager.set("user_id", user_id, expires_at=None)
+    st.session_state["user_id"] = user_id
+
+    user_component(user_id)
     st.markdown(set_root_css(), unsafe_allow_html=True)
     inject_css_files()
 
@@ -67,6 +65,7 @@ def main():
 
     try:
         pg.run()
+        st.write(f"Your user_id: {user_id}")
 
     except Exception as e:
         st.header("Error")
