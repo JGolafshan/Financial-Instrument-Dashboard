@@ -17,7 +17,6 @@ from src.components.simple_components import user_component
 from src.utils.utils import set_root_css
 
 with st.empty():
-    @st.cache_resource
     def get_cookie_manager():
         return stx.CookieManager()
 
