@@ -8,6 +8,8 @@
 
 import pandas as pd
 import streamlit as st
+from pymongo import DESCENDING
+
 from src.utils.utils import set_page_state
 from src.utils.static_values import static_page_names, static_page_types
 
@@ -40,7 +42,7 @@ def get_data(size: int, page: int, query: dict = None):
     query = query or {}
     queries_size = collection.count_documents(query)
 
-    cursor = collection.find(query).sort("datetime", -1).skip(skip).limit(size)
+    cursor = collection.find(query).sort("datetime", DESCENDING).skip(skip).limit(size)
     items = list(cursor)
 
     for item in items:

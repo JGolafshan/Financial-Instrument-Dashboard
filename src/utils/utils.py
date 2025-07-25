@@ -36,7 +36,8 @@ def set_page_state(page: str):
     if st.session_state.get("current_page") != page:
         st.session_state.current_page = page
         user_id = st.session_state.get("user_id")
-        insert_document(user_id, datetime.datetime.now(), page, [], "viewed")
+        utc_now = datetime.datetime.now(datetime.timezone.utc)
+        insert_document(user_id, utc_now, page, [], "viewed")
 
 
 def set_root_css():
