@@ -65,7 +65,6 @@ def main():
 
     try:
         pg.run()
-        st.write(f"Your user_id: {user_id}")
 
     except Exception as e:
         st.header("Error")
