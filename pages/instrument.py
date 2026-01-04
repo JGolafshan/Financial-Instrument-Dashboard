@@ -130,14 +130,14 @@ def show_bs_model():
 
         if is_call:
             option_fig = plot_option_heatmap(bs_model, num_of_contracts, spot_range, vol_range, True)
-            st.plotly_chart(option_fig, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(option_fig, width="stretch", config={'displayModeBar': False})
         else:
             option_fig = plot_option_heatmap(bs_model, num_of_contracts, spot_range, vol_range, False)
-            st.plotly_chart(option_fig, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(option_fig, width="stretch", config={'displayModeBar': False})
 
 
 def plot_historical_chart(stock_data):
-    st.plotly_chart(historical_chart(stock_data), use_container_width=True)
+    st.plotly_chart(historical_chart(stock_data), width="stretch")
 
 
 @st.fragment(run_every=None)
@@ -153,7 +153,7 @@ def show_monte_carlo_page():
                                   number_of_simulations)
     mc_sim.simulate()
     simulation_results = mc_sim.get_simulation_results()
-    st.plotly_chart(monte_carlo_chart(simulation_results), use_container_width=True)
+    st.plotly_chart(monte_carlo_chart(simulation_results), width="stretch")
 
 
 def show_info(instrument_data):
