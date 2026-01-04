@@ -31,6 +31,7 @@ def get_pages():
         st.Page("pages/instrument.py", title="Instrument", icon=":material/show_chart:", url_path="/instrument"),
         st.Page("pages/instruments.py", title="Instruments", icon=":material/show_chart:", url_path="/instruments"),
         st.Page("pages/queries.py", title="Historical Queries", icon=":material/show_chart:", url_path="/history"),
+        st.Page("pages/tracker.py", title="Portfolio Tracker", icon=":material/show_chart:", url_path="/tracker"),
         st.Page("pages/search.py", title="Instrument Query", icon=":material/show_chart:", url_path="/search"),
     ]
 

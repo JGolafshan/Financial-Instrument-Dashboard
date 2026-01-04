@@ -24,6 +24,7 @@ def add_navigation_links():
     st.sidebar.page_link("pages/home.py", label="Home", icon=":material/home_filled:")
     st.sidebar.page_link("pages/instrument.py", label="Instrument Dashboard", icon=":material/dashboard:")
     st.sidebar.page_link("pages/instruments.py", label="Instruments", icon=":material/explore:")
+    st.sidebar.page_link("pages/tracker.py", label="Portfolio Tracker", icon=":material/earthquake:"),
     st.sidebar.page_link("pages/queries.py", label="Queries", icon=":material/history:")
 
 
