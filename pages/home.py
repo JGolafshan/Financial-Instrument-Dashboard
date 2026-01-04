@@ -98,7 +98,7 @@ def display_indices(indices_data):
     display_chunked_items(indices_data, cols, start_idx, render_stock_metric)
 
 
-@st.experimental_fragment(run_every="8s")
+@st.fragment(run_every="8s")
 def display_timezones_fragment(data):
     start_idx = get_next_chunk_index("timezone_index", len(data))
     cols = st.columns(CHUNK_SIZE)
