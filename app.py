@@ -28,7 +28,7 @@ def get_db_connection():
 def get_pages():
     return [
         st.Page("pages/home.py", title="Landing Page", icon=":material/show_chart:", url_path="/home", default=True),
-        st.Page("pages/instrument.py", title="Instrument", icon=":material/show_chart:", url_path="/instrument"),
+        st.Page("pages/instrument.py", title="Asset Dashboard", icon=":material/show_chart:", url_path="/instrument"),
         st.Page("pages/instruments.py", title="Instruments", icon=":material/show_chart:", url_path="/instruments"),
         st.Page("pages/queries.py", title="Historical Queries", icon=":material/show_chart:", url_path="/history"),
         st.Page("pages/tracker.py", title="Portfolio Tracker", icon=":material/show_chart:", url_path="/tracker"),
