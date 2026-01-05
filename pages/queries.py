@@ -187,7 +187,7 @@ def main():
     if paged_df.empty:
         pagination.warning("No rows found matching filtering criteria.")
     else:
-        pagination.dataframe(paged_df, use_container_width=True, height=400, hide_index=True)
+        pagination.dataframe(paged_df, width="stretch", height=400, hide_index=True)
 
 
 if __name__ == "__main__":
