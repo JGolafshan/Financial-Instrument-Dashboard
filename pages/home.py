@@ -119,11 +119,13 @@ def main():
         Or review user-generated queries with filters for user ID, date, and other related parameters.
     """)
 
-    btn1, btn2, _ = st.columns([0.15, 0.15, 0.7])
+    btn1, btn2, btn3, _ = st.columns([0.15, 0.15, 0.15, 0.55])
     if btn1.button("Search Instruments"):
         st.switch_page("pages/search.py")
-    if btn2.button("View User Activity"):
+    elif btn2.button("View User Activity"):
         st.switch_page("pages/queries.py")
+    elif btn3.button("Create a portfolio"):
+        st.switch_page("pages/tracker.py")
 
     st.markdown("---")
     st.subheader("Global Timezones")
