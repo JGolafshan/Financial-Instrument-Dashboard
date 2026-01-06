@@ -19,6 +19,13 @@ def user_component(session_id):
     """, unsafe_allow_html=True)
 
 
+def title_divider():
+    st.markdown(
+        "<hr style='margin-top:-0.5rem;margin-bottom:2rem;'>",
+        unsafe_allow_html=True
+    )
+
+
 def option_metric(css_style: str, option_type: str, option_price: float, option_delta: float, option_theta: float,
                   option_rho: float, option_gamma: float, option_vega: float):
     return f"""

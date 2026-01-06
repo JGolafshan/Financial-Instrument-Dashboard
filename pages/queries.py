@@ -10,6 +10,7 @@ import pandas as pd
 import streamlit as st
 from pymongo import DESCENDING
 
+from src.components.simple_components import title_divider
 from src.utils.utils import set_page_state
 from src.utils.static_values import static_page_names, static_page_types
 
@@ -34,7 +35,6 @@ def get_data(size: int, page: int, query: dict = None):
     """
     Fetches filtered data from MongoDB, returns a batch of records based on page size.
     """
-    st.cache_data.clear()
     db = st.session_state.db_client["user_history"]
     collection = db["history"]
 
@@ -93,7 +93,8 @@ def main():
     set_page_state("pages/queries.py")
 
     st.title("User Activity")
-    st.markdown("""Explore user activities and interactions on this website, including your own and others' actions.""")
+    st.caption("""Explore user activities and interactions on this website, including your own and others' actions.""")
+    title_divider()
 
     # --- Initialize Session State Filters ---
     default_filters = {
@@ -165,6 +166,7 @@ def main():
 
     # Filter sidebar
     with filter_column:
+
         st.subheader("Filter Options")
         with st.form(key="filter_form", border=False):
             st.text_input("Filter by User ID", key="filter_user_id", placeholder="e.g., c3b831ed-979d...")
