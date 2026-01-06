@@ -141,7 +141,7 @@ def main():
 
         st.button(
             f"Clear Filters ({len(active_filters)})" if active_filters else "Clear Filters",
-            use_container_width=True,
+            width='stretch',
             on_click=clear_filters,
             disabled=not active_filters
         )
@@ -167,7 +167,7 @@ def main():
             st.dataframe(
                 filtered_df,
                 hide_index=True,
-                use_container_width=True,
+                width='stretch',
                 height=450
             )
 
