@@ -121,7 +121,7 @@ def main():
 
     # Header
     st.title("User Activity")
-    st.caption("""Explore user activities and interactions on this website, including your own and others' actions.""")
+    st.caption("Explore user activities and interactions on this website, including your own and others' actions.")
     title_divider()
 
     qp = st.query_params

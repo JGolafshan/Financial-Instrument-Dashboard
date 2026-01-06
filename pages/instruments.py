@@ -76,19 +76,17 @@ def filter_data(df, search_query="", exchange_name_filter="", exchange_symbol_fi
 def main():
     set_page_state("pages/instruments.py")
 
-    # Header
-    st.title("Instrument Directory")
-    st.caption(
-        "Explore and filter available financial instruments. "
-        "Search by ticker, company name, or exchange."
-    )
-    title_divider()
-
     # Query params
     qp = st.query_params
     search_q = qp.get("q", "")
     exchange_name_q = qp.get("exchange_name", "")
     exchange_symbol_q = qp.get("exchange_symbol", "")
+
+    # Header
+    st.title("Instrument Directory")
+    st.caption("Explore and filter available financial instruments. Search by ticker, company name, or exchange.")
+    title_divider()
+
 
     # Load data
     raw_df = load_clean_ticker_data()

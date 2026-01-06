@@ -10,6 +10,7 @@
 
 import streamlit as st
 from src.utils.utils import set_page_state
+from src.components.simple_components import title_divider
 from src.components.custom_searchbar import custom_search_bar
 
 
@@ -21,7 +22,8 @@ def main():
 
         with content:
             content.header("Search for Instruments")
-            content.markdown("#### Search over 54,000 Instruments available")
+            content.caption("Search over 54,000 Instruments available")
+            title_divider()
 
             if "search_warning" in st.session_state:
                 st.warning(st.session_state["search_warning"])
