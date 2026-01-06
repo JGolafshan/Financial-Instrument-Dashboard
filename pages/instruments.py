@@ -113,8 +113,7 @@ def main():
             "Exchange Name",
             options=[""] + exchange_names,
             format_func=lambda x: x or "All",
-            index=(exchange_names.index(exchange_name_q) + 1)
-            if exchange_name_q in exchange_names else 0,
+            index=(exchange_names.index(exchange_name_q) + 1) if exchange_name_q in exchange_names else 0,
             key="exchange_name",
             on_change=sync_query_params
         )
@@ -123,8 +122,7 @@ def main():
             "Exchange Symbol",
             options=[""] + exchange_symbols,
             format_func=lambda x: x or "All",
-            index=(exchange_symbols.index(exchange_symbol_q) + 1)
-            if exchange_symbol_q in exchange_symbols else 0,
+            index=(exchange_symbols.index(exchange_symbol_q) + 1) if exchange_symbol_q in exchange_symbols else 0,
             key="exchange_symbol",
             on_change=sync_query_params
         )

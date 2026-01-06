@@ -15,6 +15,35 @@ from src.utils.utils import set_page_state
 from src.utils.static_values import static_page_names, static_page_types
 
 
+FILTER_KEYS = ["q", "filter_user_id", "filter_page_url", "filter_type", "filter_date", "page_number"]
+
+def sync_query_params():
+    for key in FILTER_KEYS:
+        value = st.session_state.get(key)
+
+        # Remove empty values
+        if value in ("", None):
+            st.query_params.pop(key, None)
+            continue
+
+        if key == "filter_date":
+            st.query_params[key] = value
+            continue
+
+        if key == "page_number":
+            st.query_params[key] = int(value)
+            continue
+
+        # Everything else → stripped string
+        st.query_params[key] = str(value).strip()
+
+
+def clear_filters():
+    for key in FILTER_KEYS:
+        st.session_state[key] = ""
+    st.query_params.clear()
+
+
 def extract_search_value(val):
     if isinstance(val, list) and val:
         first = val[0]
@@ -66,14 +95,11 @@ def get_data(size: int, page: int, query: dict = None):
     return df, queries_size
 
 
-def filter_data(user_id_filter="", page_url_filter="", type_filter="", date_filter=None, size=1000, page=1):
+def filter_data(page_url_filter="", type_filter="", date_filter=None, size=1000, page=1):
     """
     Fetches data from MongoDB applying only structured filters, no text search.
     """
     query = {}
-
-    if user_id_filter := user_id_filter.strip():
-        query["user_id"] = {"$regex": user_id_filter, "$options": "i"}
 
     if page_url_filter and page_url_filter != "Select a Page URL":
         query["page_url"] = page_url_filter
@@ -91,52 +117,85 @@ def filter_data(user_id_filter="", page_url_filter="", type_filter="", date_filt
 
 def main():
     set_page_state("pages/queries.py")
+    sync_query_params()
 
+    # Header
     st.title("User Activity")
     st.caption("""Explore user activities and interactions on this website, including your own and others' actions.""")
     title_divider()
 
-    # --- Initialize Session State Filters ---
-    default_filters = {
-        "filter_search": "",
-        "filter_user_id": "",
-        "filter_page_url": "Select a Page URL",
-        "filter_type": "Select a Page Status",
-        "filter_date": None,
-        "page_number": 1
-    }
-    for key, val in default_filters.items():
-        st.session_state.setdefault(key, val)
+    qp = st.query_params
+    search_q = qp.get("q", "")
+    filter_page_url_q = qp.get("filter_page_url", "")
+    filter_type_q = qp.get("filter_type", "")
+    filter_date_q = qp.get("filter_date", "")
+    page_number_q = int(qp.get("page_number", 1))
 
     # Layout Columns
-    dataframe_column, filter_column = st.columns((9, 2))
-    search_input_container, empty1, page_size_container = dataframe_column.columns((2, 4, 1))
+    filter_column, dataframe_column = st.columns((2, 9), gap="large")
+
+    # Filter sidebar
+    with filter_column:
+        st.subheader("Filters")
+
+        st.text_input(
+            label = "Search Recent Activity",
+            value = st.session_state.get("q", ""),
+            key = "q",
+            placeholder = "Search Recent User Activities",
+            on_change = sync_query_params
+        )
+        st.selectbox(
+            "Filter by Page URL",
+            options = [""] + static_page_names,
+            format_func = lambda x: x or "Select a Page URL",
+            index = (static_page_names.index(filter_page_url_q) + 1) if filter_page_url_q in static_page_names else 0,
+            key = "filter_page_url",
+            on_change=sync_query_params
+            )
+        st.selectbox(
+                "Filter by Page Type",
+                options=[""] + static_page_types,
+                format_func=lambda x: x or "Select a Page Status",
+                index=(static_page_types.index(filter_type_q) + 1) if filter_type_q in static_page_types else 0,
+                key="filter_type",
+                on_change=sync_query_params
+            )
+
+        st.date_input("Filter by Date", format="YYYY-MM-DD", value=st.session_state.get("filter_date", None), key="filter_date", on_change=sync_query_params)
+        batch_size = int(st.selectbox("Page Size", options=[25, 50, 100], index=0))
+
+        # Active filter summary (used to count the number of filters)
+        active_filters = {
+            "Search": st.session_state.get("q"),
+            "Page URL": st.session_state.get("filter_page_url"),
+            "Filter Type": st.session_state.get("filter_type"),
+            "Filter Date": st.session_state.get("filter_date"),
+        }
+        active_filters = {k: v for k, v in active_filters.items() if v}
+
+        st.divider()
+
+        st.button(
+            f"Clear Filters ({len(active_filters)})" if active_filters else "Clear Filters",
+            width='stretch',
+            on_click=clear_filters,
+            disabled=not active_filters
+        )
 
     # DataFrame + Pagination
     with dataframe_column:
-        # Search Box
-        search_input_container.text_input(
-            label="Search Recent Activity",
-            value=st.session_state.get("filter_search", ""),
-            key="filter_search",
-            placeholder="Search Recent User Activities"
-        )
-
-        # Page Size
-        batch_size = page_size_container.selectbox("Page Size", options=[25, 50, 100], index=0)
-
         # Get data WITHOUT text search filtering on Mongo side
         filtered_df, sub_entries = filter_data(
-            user_id_filter=st.session_state["filter_user_id"],
-            page_url_filter=st.session_state["filter_page_url"],
-            type_filter=st.session_state["filter_type"],
-            date_filter=st.session_state["filter_date"],
+            page_url_filter=filter_page_url_q,
+            type_filter=filter_type_q,
+            date_filter=filter_date_q,
             size=1000,  # TODO Client Side filtering?
-            page=1
+            page=page_number_q
         )
 
         # Apply client-side search filter across all string columns
-        search_query = st.session_state["filter_search"].strip()
+        search_query = st.session_state["q"].strip()
         if search_query:
             mask = pd.Series(False, index=filtered_df.index)
             for col in filtered_df.columns:
@@ -147,7 +206,7 @@ def main():
 
         # Pagination calculations
         total_pages = max((sub_entries - 1) // batch_size + 1, 1)
-        current_page = st.session_state["page_number"]
+        current_page = page_number_q
         current_page = min(max(current_page, 1), total_pages)  # clamp page number
 
         start_idx = (current_page - 1) * batch_size
@@ -161,34 +220,11 @@ def main():
         with bottom_menu[2]:
             current_page = st.number_input("Page Number", min_value=1, max_value=total_pages, step=1, key="page_number")
 
-        with bottom_menu[0]:
-            st.markdown(f"Showing **{start_idx + 1}** to **{end_idx}** of **{sub_entries}** entries")
-
-    # Filter sidebar
-    with filter_column:
-
-        st.subheader("Filter Options")
-        with st.form(key="filter_form", border=False):
-            st.text_input("Filter by User ID", key="filter_user_id", placeholder="e.g., c3b831ed-979d...")
-            st.selectbox("Filter by Page URL", options=static_page_names, key="filter_page_url")
-            st.selectbox("Filter by Page Type", options=static_page_types, key="filter_type")
-            st.date_input("Filter by Date", format="YYYY-MM-DD", key="filter_date")
-
-            clear, apply = st.columns(2)
-            with clear:
-                if st.form_submit_button("Clear Filters"):
-                    for key in default_filters:
-                        st.session_state.pop(key)
-                    st.session_state["page_number"] = 1
-                    st.rerun()
-
-            with apply:
-                st.form_submit_button("Apply Filters")
-
     # Display DataFrame
     if paged_df.empty:
         pagination.warning("No rows found matching filtering criteria.")
     else:
+        pagination.markdown(f"Displaying **{start_idx + 1}** to **{end_idx}** of **{sub_entries}** entries")
         pagination.dataframe(paged_df, width="stretch", height=400, hide_index=True)
 
 
