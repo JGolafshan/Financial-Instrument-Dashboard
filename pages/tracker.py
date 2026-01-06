@@ -12,13 +12,10 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import streamlit as st
-
 from src.utils.utils import set_page_state
 
 
-# ==========================================================
-# SAMPLE PORTFOLIO SEED
-# ==========================================================
+# Sample Portfolio Seed data
 test_data = [
     {
         "asset_name": "TSLA",
@@ -37,21 +34,52 @@ test_data = [
 ]
 
 
+FILTER_KEYS = ["period", "ci", "portfolio"]
+
+def sync_query_params():
+    for key in FILTER_KEYS:
+        value = st.session_state.get(key, None)
+        if value:
+            st.query_params[key] = value
+        elif key in st.query_params:
+            del st.query_params[key]
+
+
+@st.cache_data(show_spinner="Downloading historical price data...")
+def download_historical_portfolio(portfolio_data):
+    adj_close_df = pd.DataFrame()
+    for _, ticker in portfolio_data.iterrows():
+        if not ticker["enabled"]:
+            continue
+
+        symbol = ticker["asset_name"]
+        start_date = ticker["entry_at"]
+
+        data = yf.download(symbol, start=start_date, progress=False)
+        adj_close_df[symbol] = data["Close"]
+
+    adj_close_df = adj_close_df.dropna()
+    return adj_close_df
+
+
+
 def main():
     set_page_state("pages/tracker.py")
 
+    # Query params
+    qp = st.query_params
+    period_input = int(qp.get("period", 5))
+    ci_input = int(qp.get("ci", 95))
+    portfolio_data = qp.get("portfolio", "")
+
     # Header
     st.title("Portfolio Risk Dashboard")
-    st.caption(
-        "Monitor portfolio composition, quantify downside risk, "
-        "and evaluate historical stress scenarios."
-    )
+    st.caption("Monitor portfolio composition, quantify downside risk, and evaluate historical stress scenarios.")
 
     with st.container():
-        a1, a2, a3, _ = st.columns([1.2, 1.2, 1.2, 6.6])
+        a1, a2, _ = st.columns([1.2, 1.2, 7.8])
         a1.button("Save Portfolio")
         a2.button("Load Portfolio")
-        a3.button("Export Report")
 
     st.divider()
 
@@ -65,7 +93,9 @@ def main():
         look_back_period = st.number_input(
             "Rolling Window (Days)",
             min_value=1,
-            value=5
+            value=period_input,
+            key="period",
+            on_change = sync_query_params
         )
 
     with c2:
@@ -73,48 +103,56 @@ def main():
             "Confidence Level (%)",
             min_value=1,
             max_value=100,
-            value=95
+            value=ci_input,
+            key="ci",
+            on_change=sync_query_params
         )
 
-    with c3:
-        st.info(
-            "Changes here immediately affect VaR, CVaR "
-            "and stress-test outputs.",
-            icon="ℹ️"
-        )
 
     st.divider()
 
     #KPI Metrics
     st.subheader("Portfolio Risk Snapshot")
-
-    k1, k2, k3, k4,k5,k6,k7,k8 = st.columns(8)
-
-    k1.metric("Value at Risk (VaR)", "4.00%")
-    k2.metric("Conditional VaR", "5.00%")
-    k3.metric("Portfolio Beta", "1.12")
-    k4.metric("Risk Status", "Moderate", delta="▲ Elevated", delta_color="inverse")
-    k5.metric("Value at Risk (VaR)", "4.00%")
-    k6.metric("Conditional VaR", "5.00%")
-    k7.metric("Portfolio Beta", "1.12")
-    k8.metric("Risk Status", "Moderate", delta="▲ Elevated", delta_color="inverse")
+    k1, k2, k3, k4,k5,k6,k7 = st.columns(7)
 
     st.caption("Metrics based on historical simulation")
-
     st.divider()
 
-    # Porfolio
-    portfolio = pd.DataFrame(test_data)
 
-    left, right = st.columns([0.65, 0.35], gap="large")
 
     # ---------------- Portfolio Editor ----------------
-    with left:
+    with st.container(border=False):
         st.markdown("### Portfolio Composition")
         st.caption("Edit asset weights, quantities, and inclusion status")
 
+        # Button to open modal
+        with st.popover("Add New Asset"):
+            # Default values
+            new_asset_name = st.text_input("Asset Ticker", value="AAPL")
+            new_weight = st.number_input("Weight (%)", min_value=0, max_value=100, value=10)
+            new_amount = st.number_input("Quantity", min_value=1, value=100)
+            new_entry_at = st.date_input("Entry Date", value=datetime.date.today())
+            new_enabled = st.checkbox("Include in portfolio", value=True)
+
+            if st.button("Add to Portfolio"):
+                # Create a new row
+                new_row = {
+                    "asset_name": new_asset_name,
+                    "weight": new_weight,
+                    "amount": new_amount,
+                    "entry_at": new_entry_at,
+                    "enabled": new_enabled
+                }
+
+                # Append to current portfolio_data
+                test_data.append(new_row)
+
+                st.success(f"Added {new_asset_name} to portfolio!")
+
+        # Portfolio
+        portfolio = pd.DataFrame(test_data)
         portfolio_data = st.data_editor(
-            portfolio,
+            data=portfolio,
             hide_index=True,
             use_container_width=True,
             column_config={
@@ -132,47 +170,21 @@ def main():
         if total_weight != 100:
             st.warning(f"Total portfolio weight is {total_weight}%, not 100%.")
 
-    with right:
-        st.markdown("### Risk Interpretation")
-
-        st.info(
-            """
-            **How to read these metrics**
-            - **VaR**: Expected worst loss under normal conditions  
-            - **CVaR**: Average loss beyond the VaR threshold  
-            - **Beta**: Sensitivity to market-wide shocks  
-            """,
-            icon="📘"
-        )
-
     st.divider()
-
 
     st.subheader("Historical Stress Testing")
     st.caption("Evaluate downside behaviour under rolling historical returns")
 
-    with st.spinner("Downloading historical price data…"):
-        adj_close_df = pd.DataFrame()
 
-        for _, ticker in portfolio_data.iterrows():
-            if not ticker["enabled"]:
-                continue
+    adj_close_df = download_historical_portfolio(portfolio_data=portfolio)
 
-            symbol = ticker["asset_name"]
-            start_date = ticker["entry_at"]
 
-            data = yf.download(symbol, start=start_date, progress=False)
-            adj_close_df[symbol] = data["Close"]
 
-    adj_close_df = adj_close_df.dropna()
+    adj_close_updated = adj_close_df.loc[:, portfolio_data.loc[portfolio_data["enabled"], "asset_name"]]
 
-    log_returns = np.log(adj_close_df / adj_close_df.shift(1)).dropna()
+    log_returns = np.log(adj_close_updated / adj_close_updated.shift(1)).dropna()
 
-    weights = (
-        portfolio_data
-        .set_index("asset_name")["weight"]
-        .loc[adj_close_df.columns]
-    )
+    weights = (portfolio_data.set_index("asset_name")["weight"].loc[adj_close_updated.columns])
     weights = weights / weights.sum()
 
     portfolio_value = 100
@@ -181,18 +193,31 @@ def main():
     days = look_back_period
     range_returns = historical_return.rolling(window=days).sum().dropna()
 
-    VaR = -np.percentile(
-        range_returns,
-        100 - confidence_interval
-    ) * portfolio_value
+    losses = -range_returns
+
+    # VaR (loss quantile)
+    VaR = np.percentile(losses, confidence_interval) * portfolio_value
+
+    # CVaR (Expected Shortfall)
+    CVaR = losses[losses >= VaR / portfolio_value].mean() * portfolio_value
+
+    #Maximum drawdown
+    cum_returns = (1 + historical_return).cumprod()
+    drawdown = cum_returns / cum_returns.cummax() - 1
+    max_dd = drawdown.min()
+
+    # Annualized return
+    ann_return = historical_return.mean() * 252
+    ann_vol = historical_return.std() * np.sqrt(252)
+
+    k1.metric("Value at Risk (VaR)", f"{-VaR:.2f}%")
+    k2.metric("Conditional VaR",  f"{-CVaR:.2f}%")
+    k3.metric("Maximum Drawdown", f"{int(-max_dd*100)}%")
+    k4.metric("Annualized Return", f"{int(ann_return*100)}%")
+    k5.metric("Annualized Vol.", f"{int(ann_vol*100)}%")
 
 
-    st.error(
-        f"📉 **{days}-Day Value at Risk:** {VaR:.2f}",
-        icon="⚠️"
-    )
-
-    with st.expander("Return Distribution & Stress Path"):
+    with st.expander("Return Distribution & Stress Path", True):
         st.line_chart(range_returns)
 
 if __name__ == "__main__":
