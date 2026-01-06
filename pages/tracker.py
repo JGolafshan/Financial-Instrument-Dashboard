@@ -2,114 +2,198 @@
 # -*- coding: utf-8 -*-
 
 """
-    Date: 04/04/2024
-    Author: Joshua David Golafshan
-    Description: A page to add assets and view the risk metrics
-
+Date: 04/04/2024
+Author: Joshua David Golafshan
+Description: Portfolio risk & performance dashboard
 """
+
 import datetime
+import numpy as np
 import pandas as pd
+import yfinance as yf
 import streamlit as st
+
 from src.utils.utils import set_page_state
 
-def var_caluation():
-    pass
 
-def cvar_caluation():
-    pass
-
-def beta_caluation():
-    pass
-
+# ==========================================================
+# SAMPLE PORTFOLIO SEED
+# ==========================================================
+test_data = [
+    {
+        "asset_name": "TSLA",
+        "weight": 10,
+        "amount": 200,
+        "entry_at": datetime.date.today() - datetime.timedelta(days=365 * 2),
+        "enabled": True
+    },
+    {
+        "asset_name": "AAPL",
+        "weight": 90,
+        "amount": 200,
+        "entry_at": datetime.date.today() - datetime.timedelta(days=365 * 2),
+        "enabled": True
+    }
+]
 
 
 def main():
     set_page_state("pages/tracker.py")
 
-    title_text, save_btn, load_btn, extra_space = st.columns([0.2, .08, .08, 0.4], vertical_alignment="center")
-    st.markdown("Quantitative analysis of portfolio risk and performance, including alpha and tail-risk metrics, with portfolio persistence and PDF reporting.")
-    title_text.title("Portfolio Tracker")
-    save_btn.button("Save", key="save")
-    load_btn.button("Load", key="load")
+    # Header
+    st.title("Portfolio Risk Dashboard")
+    st.caption(
+        "Monitor portfolio composition, quantify downside risk, "
+        "and evaluate historical stress scenarios."
+    )
 
-    metric_container = st.container()
+    with st.container():
+        a1, a2, a3, _ = st.columns([1.2, 1.2, 1.2, 6.6])
+        a1.button("Save Portfolio")
+        a2.button("Load Portfolio")
+        a3.button("Export Report")
 
-    with st.form("my_form"):
-        header = st.columns([1, 2, 2])
+    st.divider()
 
-        row1 = st.columns([1, 2, 2])
-        colorA = row1[0].color_picker('Team A', '#0000FF')
-        opacityA = row1[1].slider('A opacity', 20, 100, 50)
-        sizeA = row1[2].slider('A size', 20, 100, 50)
+    # Setting Panel
+    st.subheader("Analysis Configuration")
+    st.caption("Define parameters used across all risk calculations")
 
-        st.form_submit_button()
+    c1, c2, c3 = st.columns([1, 1, 2])
+
+    with c1:
+        look_back_period = st.number_input(
+            "Rolling Window (Days)",
+            min_value=1,
+            value=5
+        )
+
+    with c2:
+        confidence_interval = st.number_input(
+            "Confidence Level (%)",
+            min_value=1,
+            max_value=100,
+            value=95
+        )
+
+    with c3:
+        st.info(
+            "Changes here immediately affect VaR, CVaR "
+            "and stress-test outputs.",
+            icon="ℹ️"
+        )
+
+    st.divider()
+
+    #KPI Metrics
+    st.subheader("Portfolio Risk Snapshot")
+
+    k1, k2, k3, k4,k5,k6,k7,k8 = st.columns(8)
+
+    k1.metric("Value at Risk (VaR)", "4.00%")
+    k2.metric("Conditional VaR", "5.00%")
+    k3.metric("Portfolio Beta", "1.12")
+    k4.metric("Risk Status", "Moderate", delta="▲ Elevated", delta_color="inverse")
+    k5.metric("Value at Risk (VaR)", "4.00%")
+    k6.metric("Conditional VaR", "5.00%")
+    k7.metric("Portfolio Beta", "1.12")
+    k8.metric("Risk Status", "Moderate", delta="▲ Elevated", delta_color="inverse")
+
+    st.caption("Metrics based on historical simulation")
+
+    st.divider()
+
+    # Porfolio
+    portfolio = pd.DataFrame(test_data)
+
+    left, right = st.columns([0.65, 0.35], gap="large")
+
+    # ---------------- Portfolio Editor ----------------
+    with left:
+        st.markdown("### Portfolio Composition")
+        st.caption("Edit asset weights, quantities, and inclusion status")
+
+        portfolio_data = st.data_editor(
+            portfolio,
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "asset_name": st.column_config.TextColumn("Asset"),
+                "weight": st.column_config.NumberColumn(
+                    "Weight (%)", format="%d%%", min_value=0, max_value=100
+                ),
+                "amount": st.column_config.NumberColumn("Quantity"),
+                "entry_at": st.column_config.DateColumn("Entry Date"),
+                "enabled": st.column_config.CheckboxColumn("Include"),
+            }
+        )
+
+        total_weight = portfolio_data["weight"].sum()
+        if total_weight != 100:
+            st.warning(f"Total portfolio weight is {total_weight}%, not 100%.")
+
+    with right:
+        st.markdown("### Risk Interpretation")
+
+        st.info(
+            """
+            **How to read these metrics**
+            - **VaR**: Expected worst loss under normal conditions  
+            - **CVaR**: Average loss beyond the VaR threshold  
+            - **Beta**: Sensitivity to market-wide shocks  
+            """,
+            icon="📘"
+        )
+
+    st.divider()
 
 
-    data = [{
-        "asset_name": "TSLA",
-        "weight": 10,
-        "amount": 200,
-        "entry_at": datetime.date.today(),
-        "enabled": True
-    }]
+    st.subheader("Historical Stress Testing")
+    st.caption("Evaluate downside behaviour under rolling historical returns")
 
-    portfolio = pd.DataFrame(data)
+    with st.spinner("Downloading historical price data…"):
+        adj_close_df = pd.DataFrame()
 
-    @st.dialog("Add Row")
-    def add_row():
-        with st.form("add_row_form", clear_on_submit=True):
-            name = st.text_input("Name")
-            age = st.number_input("Age", min_value=0, step=1)
-            email = st.text_input("Email")
-            submitted = st.form_submit_button("Add Row")
+        for _, ticker in portfolio_data.iterrows():
+            if not ticker["enabled"]:
+                continue
 
+            symbol = ticker["asset_name"]
+            start_date = ticker["entry_at"]
 
-    with st.container(height=300, border=None):
-        st.data_editor(portfolio,
-                       hide_index=True,
-                       column_config={
-                           "asset_name": st.column_config.TextColumn(
-                            label="Asset Name",
-                            help="The Asset Name",
-                            default="",
-                            max_chars=50,
-                            validate=r"^st\.[a-z_]+$",
-                        ),
-                           "weight": st.column_config.NumberColumn(
-                               label="Asset Weight",
-                               help="The propuation the asset makes up of your portfolio",
-                               format="%d%%",
-                               min_value=0,
-                               max_value=100
-                           ),
-                           "amount": st.column_config.NumberColumn(
-                               label="Quantity",
-                               help="The total amount you hold",
-                           ),
-                           "entry_at": st.column_config.DateColumn(
-                               label="Entry Date",
-                               help="When you enter the position",
-                           ),
-                           "enabled": st.column_config.CheckboxColumn(
-                               label="Enabled",
-                               help="Disabling this means it will not be included in the calculation",
-                           )
-                       }
-                       )
+            data = yf.download(symbol, start=start_date, progress=False)
+            adj_close_df[symbol] = data["Close"]
+
+    adj_close_df = adj_close_df.dropna()
+
+    log_returns = np.log(adj_close_df / adj_close_df.shift(1)).dropna()
+
+    weights = (
+        portfolio_data
+        .set_index("asset_name")["weight"]
+        .loc[adj_close_df.columns]
+    )
+    weights = weights / weights.sum()
+
+    portfolio_value = 100
+    historical_return = (log_returns * weights).sum(axis=1)
+
+    days = look_back_period
+    range_returns = historical_return.rolling(window=days).sum().dropna()
+
+    VaR = -np.percentile(
+        range_returns,
+        100 - confidence_interval
+    ) * portfolio_value
 
 
-    for asset in portfolio:
-        pass
+    st.error(
+        f"📉 **{days}-Day Value at Risk:** {VaR:.2f}",
+        icon="⚠️"
+    )
 
-    with metric_container:
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Temperature", "70 °F", "1.2 °F")
-        col2.metric("Wind", "9 mph", "-8%")
-        col3.metric("Humidity", "86%", "4%")
-
-
-
-
+    with st.expander("Return Distribution & Stress Path"):
+        st.line_chart(range_returns)
 
 if __name__ == "__main__":
     main()
