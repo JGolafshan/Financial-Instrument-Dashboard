@@ -11,6 +11,7 @@ import orjson
 import pandas as pd
 import streamlit as st
 from src.utils.utils import set_page_state
+from src.components.simple_components import title_divider
 
 
 @st.cache_data(show_spinner="Loading ticker data")
@@ -52,8 +53,10 @@ def main():
     set_page_state("pages/instruments.py")
 
     st.title("Instrument Directory")
-    st.markdown("""Explore and filter available financial instruments on this website.
+    st.caption("""Explore and filter available financial instruments on this website.
                        Use the options on the right to filter different categorical variables.""")
+    title_divider()
+
 
     default_filters = {
         "filter_search": "",
