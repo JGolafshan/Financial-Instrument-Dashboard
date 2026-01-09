@@ -8,6 +8,7 @@ Description: OmniQuant homepage with chunked trending display & backend refresh 
 
 import time
 from datetime import datetime
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 import yfinance as yf
@@ -18,106 +19,129 @@ from src.utils.utils import set_page_state
 from src.utils.static_values import exchange_timezones
 
 CHUNK_SIZE = 5
-BACKEND_REFRESH_RATE = "600s"
-INDICES_REFRESH = "20s"
+DATA_REFRESH_RATE = 600
+INDICES_VISIBILITY_REFRESH = 20
+TIMEZONE_VISIBILITY_REFRESH = 8
+
+# Symbol and Name hard coded to reduce call bandwidth
+INDEX_TICKERS = [
+    {"symbol":'^GSPC', "name": "S&P 500"},
+    {"symbol":'^IXIC', "name": "NASDAQ Composite"},
+    {"symbol":'^FTSE', "name": "FTSE 100"},
+    {"symbol":'^N225', "name": "Nikki 225"},
+    {"symbol":'^GDAXI', "name": "DAX P"},
+    {"symbol":'^HSI', "name": "HANG SENG INDEX"},
+    {"symbol":'^AXJO', "name": "S&P/ASX 200 (^AXJO)"}
+]
 
 
-@st.cache_data(ttl=BACKEND_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
+def calc_pct_change(open_price: float, last_price: float) -> Optional[float]:
+    if not open_price or not last_price or open_price <= 0:
+        return None
+    return (last_price - open_price) / open_price * 100
+
+@st.cache_data(ttl=DATA_REFRESH_RATE, show_spinner="Refreshing Yahoo Finance data")
 def fetch_yahoo_data():
-    """Fetch fresh gainers, losers, and index data from Yahoo Finance every BACKEND_REFRESH_RATE."""
+    """Fetch Global Indices"""
     session = requests.Session(impersonate="chrome")
 
-    try:
-        indices = yf.Tickers(['^GSPC', '^DJI', '^IXIC', '^RUT', '^FTSE', '^N225', '^GDAXI', '^FCHI', '^HSI', '^AXJO'],
-                             session
-                             )
+    symbols = [idx["symbol"] for idx in INDEX_TICKERS]
+    name_map = {idx["symbol"]: idx["name"] for idx in INDEX_TICKERS}
 
-        indices_info = []
-        for ticker in indices.tickers.values():
-            try:
-                info = ticker.info
-                indices_info.append(info)
-                time.sleep(0.2)
-            except Exception as e:
-                print(f"Error fetching data for {ticker.ticker}: {e}")
+    indices = yf.Tickers(" ".join(symbols), session=session)
 
-        return indices_info
-    except e:
-        st.write(f"Error fetching data: {e}")
+    indices_info = []
 
+    for symbol, ticker in indices.tickers.items():
+        try:
+            fi = ticker.fast_info
 
-def get_next_chunk_index(session_key: str, max_len: int, chunk_size: int = CHUNK_SIZE) -> int:
-    """Cycle the index forward by chunk size, wrap around if at end."""
-    index = st.session_state.get(session_key, 0)
-    index = index + chunk_size if index + chunk_size < max_len else 0
-    st.session_state[session_key] = index
-    return index
+            last_price = fi.get("lastPrice")
+            open_price = fi.get("open")
 
+            indices_info.append({
+                "symbol": symbol,
+                "name": name_map.get(symbol, symbol),
+                "last_price": last_price,
+                "open_price": open_price,
+                "pct_change": calc_pct_change(open_price, last_price),
+            })
 
-def display_chunked_items(data, columns, start_index, render_fn):
-    """Generic display function for chunked metric rendering."""
-    chunk = data[start_index:start_index + CHUNK_SIZE]
-    for i, item in enumerate(chunk):
-        with columns[i]:
-            try:
-                render_fn(item)
-            except Exception as e:
-                st.warning(f"Render error: {e}")
+            time.sleep(0.15)  # be kind to Yahoo
+
+        except Exception as e:
+            st.warning(f"Failed to fetch {symbol}: {e}")
+
+    return indices_info
+
+def get_rotating_index(key: str, length: int) -> int:
+    idx = st.session_state.get(key, 0)
+    next_idx = idx + CHUNK_SIZE if idx + CHUNK_SIZE < length else 0
+    st.session_state[key] = next_idx
+    return idx
 
 
-def render_stock_metric(quote):
-    """Render a single stock metric card."""
-    name = quote.get("longName") or quote.get("displayName", "Unknown")
-    symbol = quote["symbol"]
-    price = quote["regularMarketPrice"]
-    change = quote["regularMarketChangePercent"]
-    st.metric(border=True, label=f"{name} ({symbol})", value=f"${price:.2f}", delta=f"{change:.2f}%")
+def render_chunked(data, render_fn, key: str):
+    start = get_rotating_index(key, len(data))
+    cols = st.columns(CHUNK_SIZE)
 
+    for col, item in zip(cols, data[start:start + CHUNK_SIZE]):
+        with col:
+            render_fn(item)
 
-def render_timezone_metric(item):
-    """Render a single timezone metric card."""
+def render_index_card(item: dict):
+    price = item["last_price"]
+    pct = item["pct_change"]
+
+    st.metric(
+        label=f"{item['name']} ({item['symbol']})",
+        value = f"${price:.2f}" if price is not None else "N/A",
+        delta=f"{pct:.2f}%" if pct is not None else "N/A",
+        border=True,
+    )
+
+def render_timezone_card(item: dict):
     region, info = item
     city, tz_name = info["City"], info["Timezone"]
 
     try:
         now = datetime.now(ZoneInfo(tz_name))
-        time_str = now.strftime("%H:%M")
-        weekday = now.strftime("%A")
-    except Exception:
-        time_str = "Error"
-        weekday = "N/A"
+        label = f"{region} ({city}) - {now:%A}" if city else f"{region} - {now:%A}"
+        value = now.strftime("%H:%M")
+    except Exception as e:
+        label, value = region, "N/A"
 
-    label = f"{region} ({city}) - {weekday}" if city else f"{region} - {weekday}"
-    st.metric(label=label, value=time_str)
+    st.metric(label=label, value=value)
 
-
-@st.fragment(run_every=INDICES_REFRESH)
-def display_indices(indices_data):
-    start_idx = get_next_chunk_index("indices_index", len(indices_data))
-    cols = st.columns(CHUNK_SIZE)
-    display_chunked_items(indices_data, cols, start_idx, render_stock_metric)
+@st.fragment(run_every=INDICES_VISIBILITY_REFRESH)
+def indices_fragment(indices_data: dict):
+    render_chunked(indices_data, render_index_card, "indices:cursor")
 
 
-@st.fragment(run_every="8s")
-def display_timezones_fragment(data):
-    start_idx = get_next_chunk_index("timezone_index", len(data))
-    cols = st.columns(CHUNK_SIZE)
-    timezone_items = list(data.items())
-    display_chunked_items(timezone_items, cols, start_idx, render_timezone_metric)
+@st.fragment(run_every=TIMEZONE_VISIBILITY_REFRESH)
+def timezones_fragment(tz_data: dict):
+    render_chunked(list(tz_data.items()), render_timezone_card, "timezones:cursor")
+
 
 
 def main():
-    set_page_state("pages/home.py")
+    set_page_state()
+
     st.title("Welcome to OmniQuant")
 
-    st.markdown("""
+    st.markdown(
+        """
         **A comprehensive platform for tracking, analyzing, and exploring financial market data. 
         Utilize interactive tools and advanced analytics to support your investment decisions.**
-    """)
-    st.markdown("""
+        """
+    )
+
+    st.markdown(
+        """
         Search for stocks with interactive charts, financial metrics, and option pricing tools. 
         Or review user-generated queries with filters for user ID, date, and other related parameters.
-    """)
+        """
+    )
 
     btn1, btn2, btn3, _ = st.columns([0.14, 0.14, 0.14, 0.58])
     if btn1.button("Search Instruments"):
@@ -128,14 +152,15 @@ def main():
         st.switch_page("pages/queries.py")
 
 
-    st.markdown("---")
+    st.divider()
     st.subheader("Global Timezones")
-    display_timezones_fragment(exchange_timezones)
+    st.caption("International Timezones • Rotates automatically")
+    timezones_fragment(exchange_timezones)
 
-    st.markdown("---")
+    st.divider()
     st.subheader("Global Indices")
-    indices = fetch_yahoo_data()
-    display_indices(indices)
+    st.caption("Data delayed • Yahoo Finance • Rotates automatically")
+    indices_fragment(fetch_yahoo_data())
 
 
 if __name__ == "__main__":
