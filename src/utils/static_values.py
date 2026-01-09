@@ -6,9 +6,6 @@
     Author: Joshua David Golafshan
 """
 
-static_page_names = ['pages/queries.py', 'pages/instruments.py', 'pages/search.py', 'pages/instrument.py', 'pages/home.py']
-static_page_types = ['viewed', 'searched']
-
 exchange_timezones = {
     "Universal": {
         "City": None,

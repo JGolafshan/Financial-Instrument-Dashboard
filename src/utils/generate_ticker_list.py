@@ -103,10 +103,10 @@ def run(letters=None) -> List[Any]:
                         all_tickers.append((ticker, name, exchange_code, exchange_name))
 
             except Exception as e:
-                print(f"❌ Error fetching {exchange_code} - {letter}: {e}")
+                print(f"Error fetching {exchange_code} - {letter}: {e}")
 
     # Summary
-    print(f"\n✅ Total Tickers Fetched: {len(all_tickers)}")
+    print(f"\nTotal Tickers Fetched: {len(all_tickers)}")
     return all_tickers  # Return collected data
 
 
@@ -129,9 +129,9 @@ def save_to_json(data, filename="tickers.json"):
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(json_data, f, indent=4, ensure_ascii=False)
 
-        print(f"✅ Data successfully saved to {filename}")
+        print(f"Data successfully saved to {filename}")
     except Exception as e:
-        print(f"❌ Error saving data to JSON: {e}")
+        print(f"Error saving data to JSON: {e}")
 
 
 # Example usage:
