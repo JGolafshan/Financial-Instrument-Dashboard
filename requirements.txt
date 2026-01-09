@@ -18,4 +18,5 @@ streamlit-router==0.1.8
 streamlit-js-eval==0.1.7
 streamlit-smart-text-input==1.0.9
 streamlit-javascript==0.1.5
+streamlit-url-fragment==0.2.1
 extra_streamlit_components==0.1.71

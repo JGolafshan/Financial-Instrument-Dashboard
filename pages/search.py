@@ -15,7 +15,7 @@ from src.components.custom_searchbar import custom_search_bar
 
 
 def main():
-    set_page_state("pages/search.py")
+    set_page_state()
 
     with st.container(key="search_page_container"):
         column_padding_empty1, content, column_padding_empty2 = st.columns([0.1, 0.8, 0.1])
