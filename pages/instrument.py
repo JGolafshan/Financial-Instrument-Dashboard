@@ -6,7 +6,7 @@
     Author: Joshua David Golafshan
     Description: all individual stock (ticker relate functions)
 """
-import orjson
+
 import numpy as np
 import streamlit as st
 from src.utils.utils import set_page_state, yahoo_data
@@ -15,11 +15,32 @@ from src.core.black_scholes_model import BlackScholesModel
 from src.core.monte_carlo_simulation import MonteCarloSimulation
 from src.components.graphing_components import plot_option_heatmap, monte_carlo_chart, historical_chart
 
-# Load Components
-set_page_state("pages/instrument.py")
-instrument_code = st.session_state.get("code", "NONE")
-st.query_params.code = instrument_code
 
+FILTER_KEYS = [
+    "code", "tab",
+    "spot_price", "strike_price", "vol", "rfir", "ttm", "num_of_contracts", "vol_min", "vol_max", "spot_min", "spot_max"
+    "num_of_sims", "look_back_period", "look_forward_period"
+]
+
+def sync_query_params():
+    for key in FILTER_KEYS:
+        value = st.session_state.get(key)
+
+        if key == "code" or key == "tab":
+            st.query_params[key] = str(value).strip()
+            continue
+
+        # Everything else → stripped string
+        st.query_params[key] = float(value)
+
+
+def clear_filters():
+    for key in FILTER_KEYS:
+        if key == "code" or key == "tab":
+            st.session_state[key] = None
+
+        st.session_state[key] = None
+    st.query_params.clear()
 
 @st.cache_data(show_spinner="Fetching instrument data...")
 def get_instrument_data(symbol: str):
@@ -80,36 +101,101 @@ def show_bs_model():
 
         input_column_1, input_column_2 = st.columns(2)
 
-        current_price = input_column_1.number_input(label="Current Price", value=st.session_state.get("current_price"),
-                                                    key="bs_price")
-        strike = input_column_2.number_input(label="Strike", value=st.session_state.get("bs_price") * 1.05,
-                                             key="bs_strike")
-        volatility = input_column_1.number_input(label="Volatility", value=0.2, key="bs_volatility")
-        interest_rate = input_column_2.number_input(label="Interest rate", value=0.05, key="bs_interest_rate")
-        time_to_maturity = input_column_1.number_input(label="Time to maturity", value=1, key="bs_time_to_maturity")
-        num_of_contracts = input_column_2.number_input(label="Number of Contracts", value=1, key="num_of_contracts")
+        float(st.query_params.get("spot_price", st.session_state.current_price))
+
+        current_price = input_column_1.number_input(
+            label="Current Price",
+            value=float(st.query_params.get("current_price", st.session_state.current_price)),
+            key="spot_price",
+            on_change=sync_query_params
+        )
+        strike_price = input_column_2.number_input(
+            label="Strike",
+            value=float(st.query_params.get("spot_price", st.session_state.current_price)) * 1.05,
+            key="strike_price",
+            on_change=sync_query_params
+        )
+
+        volatility = input_column_1.number_input(
+            label="Volatility",
+            value=float(st.query_params.get("vol", 0.5)),
+            key="vol",
+            on_change=sync_query_params
+        )
+
+        interest_rate = input_column_2.number_input(
+            label="Interest rate",
+            value=float(st.query_params.get("rfir", 0.05)),
+            key="rfir",
+            on_change=sync_query_params
+        )
+
+        time_to_maturity = input_column_1.number_input(
+            label="Time to maturity (Year)",
+            value=float(st.query_params.get("rfir", 0.05)),
+            key="ttm",
+            on_change=sync_query_params
+        )
+
+        num_of_contracts = input_column_2.number_input(
+            label="Number of Contracts",
+            value=float(st.query_params.get("num_of_contracts", 1)),
+            key="num_of_contracts",
+            on_change=sync_query_params
+        )
 
         st.markdown("##### Heatmap Variation ")
         input_column_12, input_column_22 = st.columns(2)
-        vol_min = input_column_12.number_input('Min Volatility', 0.01, 1.0, value=volatility * 0.5, step=0.01)
-        vol_max = input_column_12.number_input('Max Volatility', 0.01, 1.0, value=volatility * 1.5, step=0.01)
-        spot_min = input_column_22.number_input('Min Spot Price', 0.01, value=st.session_state.get("bs_strike") * 0.8,
-                                                step=0.01)
-        spot_max = input_column_22.number_input('Max Spot Price', 0.01, value=st.session_state.get("bs_strike") * 1.2,
-                                                step=0.01)
+        vol_min = input_column_12.number_input(
+            'Min Volatility',
+            min_value=0.01,
+            max_value=1.0,
+            key="vol_min",
+            value=volatility * 0.5,
+            step=0.01,
+            on_change=sync_query_params
+        )
+
+        vol_max = input_column_12.number_input(
+            label='Max Volatility',
+            min_value=0.01,
+            max_value=1.0,
+            key="vol_max",
+            value=volatility * 1.5,
+            step=0.01,
+            on_change=sync_query_params
+        )
+
+        spot_min = input_column_22.number_input(
+            label='Min Spot Price',
+            min_value=0.0,
+            key="spot_min",
+            value=strike_price * 0.8,
+            step=0.01,
+            on_change=sync_query_params
+        )
+
+        spot_max = input_column_22.number_input(
+            label='Max Spot Price',
+            min_value=0.0,
+            key="spot_max",
+            value=strike_price * 1.2,
+            step=0.01,
+            on_change=sync_query_params
+        )
 
     with col2:
         st.subheader("Output")
 
-        bs_model = BlackScholesModel(time_to_maturity, strike, current_price, volatility, interest_rate)
+        bs_model = BlackScholesModel(time_to_maturity, strike_price, current_price, volatility, interest_rate)
         call_price, put_price = bs_model.calculate_prices()
         greeks = bs_model.calculate_greeks()
 
-        if strike == current_price:
+        if strike_price == current_price:
             st.info("Strike equals current price — no Call or Put valuation shown.")
             return
 
-        is_call = strike > current_price
+        is_call = strike_price > current_price
         option_type = greeks["call"] if is_call else greeks["put"]
         css_type = "metric-call" if is_call else "metric-put"
         option_type_name = "Call Value" if is_call else "Put Value"
@@ -145,9 +231,34 @@ def show_monte_carlo_page():
     st.subheader("📈 Monte Carlo Simulation ")
 
     with st.expander("⚙️ Settings", expanded=False):
-        number_of_simulations = st.number_input('Number of Simulations', min_value=1, value=30, step=10, max_value=300)
-        look_back = st.number_input('Look Back Period', min_value=1, value=30, step=5, max_value=100)
-        look_forward = st.number_input('Look Forward Period', min_value=1, value=30, step=30, max_value=365 * 3)
+        number_of_simulations = st.number_input(
+            label = 'Number of Simulations',
+            key="num_of_sims",
+            min_value=1,
+            value=int(st.query_params.get("num_of_sims", 30)),
+            step=5,
+            max_value=300,
+            on_change=sync_query_params
+        )
+
+        look_back = st.number_input(
+            label = 'Look Back Period',
+            min_value=1,
+            key="look_back_period",
+            value=int(st.query_params.get("look_back_period", 30)), step=5,
+            max_value=100,
+            on_change=sync_query_params
+        )
+
+        look_forward = st.number_input(
+            label ='Look Forward Period',
+            min_value=1,
+            key="look_forward_period",
+            value=int(st.query_params.get("look_forward_period", 30)),
+            step=5,
+            max_value=365 * 3,
+            on_change=sync_query_params
+        )
 
     mc_sim = MonteCarloSimulation(get_instrument_data(instrument_code)["history"]["Close"], look_forward, look_back,
                                   number_of_simulations)
@@ -164,20 +275,30 @@ def show_info(instrument_data):
     display_summary_statistics(stock_data)
 
     # Use distinct tab names
-    chart_tab, bs_model_tab, monte_carlo_tab = st.tabs(["📈 Historical Chart", "🧮 Black-Scholes", "🎲 Monte Carlo"])
+    chart_tab, bs_model_tab, monte_carlo_tab = st.tabs(
+        ["Historical Chart", "Black-Scholes", "Monte Carlo"], default=st.query_params.get("tab","Historical Chart")
+    )
 
     with chart_tab:
         if not stock_data.empty:
+            st.query_params.tab = "Historical Chart"
             plot_historical_chart(stock_data)
 
     with bs_model_tab:
+        st.query_params.tab = "Black-Scholes"
         show_bs_model()
 
     with monte_carlo_tab:
+        st.query_params.tab = "Monte Carlo"
         show_monte_carlo_page()
 
 
 if __name__ == "__main__":
+    set_page_state()
+
+    instrument_code = st.session_state.get("code", "NONE")
+    st.query_params.code = instrument_code
+
     if instrument_code and instrument_code != "NONE":
         instrument_data = get_instrument_data(instrument_code)
         if instrument_data["info"]["trailingPegRatio"] is None:  # TODO this should be improved
