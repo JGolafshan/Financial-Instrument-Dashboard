@@ -61,7 +61,7 @@ def extract_search_value(val):
 
 # Function to get data from MongoDB
 @st.cache_data(show_spinner="Loading user history...", ttl="10s")
-def get_data(size: int, page: int, query: dict = None) -> pd.DataFrame:
+def get_data(size: int, page: int, query: dict = None):
     """
     Fetches filtered data from MongoDB, returns a batch of records based on page size.
     """
@@ -71,18 +71,15 @@ def get_data(size: int, page: int, query: dict = None) -> pd.DataFrame:
     skip = size * (page - 1)
     query = query or {}
 
+    queries_size = collection.count_documents(query)
     cursor = collection.find(query).sort("datetime", DESCENDING).skip(skip).limit(size)
     items = list(cursor)
 
     df = pd.DataFrame(items).drop(columns=['_id'], errors='ignore')
+    df["datetime"] = df["datetime"].astype(str)
+    df["datetime"] = pd.to_datetime(df["datetime"], utc=True)
 
-    df = df.astype({
-        "user_id": "string",
-        "datetime": "string",
-        "page_url": "string"
-    })
-
-    return df
+    return df, queries_size
 
 
 def filter_data(page_url_filter="", date_filter=None, size=1000, page=1) -> pd.DataFrame:
@@ -167,12 +164,12 @@ def main():
     # DataFrame + Pagination
     with dataframe_column:
         # Get data WITHOUT text search filtering on Mongo side
-        filtered_df = filter_data(
+        filtered_df, sub_entries = filter_data(
             date_filter=filter_date_q,
-            size=1000,  # TODO Client Side filtering?
+            size=batch_size,
             page=page_number_q
         )
-        sub_entries =  len(filtered_df)
+        sub_entries = len(filtered_df)
 
         # Apply client-side search filter across all string columns
         search_query = search_q.strip()
