@@ -5,13 +5,11 @@
     Date: 04/04/2024
     Author: Joshua David Golafshan
 """
-
 import uuid
 import pymongo
 import streamlit as st
 from src.utils import utils
 from src.components import sidebar
-import extra_streamlit_components as stx
 from pymongo.server_api import ServerApi
 from src.components.simple_components import user_component
 from src.utils.utils import set_root_css
@@ -41,23 +39,23 @@ def inject_css_files():
     st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
 
 
+@st.cache_resource
+def user_identifier():
+    user_id = st.session_state.get("user_id")
+    if user_id:
+        print("user_id", user_id)
+        return user_id
+
+    user_id = str(uuid.uuid4())
+    st.session_state.user_id = user_id
+    return user_id
+
+
 def main():
     st.session_state["db_client"] = get_db_connection()
 
-    cookie_manager = stx.CookieManager()
-    cookies = cookie_manager.get_all()
+    user_component(user_identifier())
 
-    # Block Streamlit if cookies are none - wait for it to populate
-    if cookies is None:
-        st.stop()
-
-    user_id = cookies.get("user_id")
-    if not user_id:
-        user_id = str(uuid.uuid4())
-        cookie_manager.set("user_id", user_id, expires_at=None)
-    st.session_state["user_id"] = user_id
-
-    user_component(user_id)
     st.markdown(set_root_css(), unsafe_allow_html=True)
     inject_css_files()
 
