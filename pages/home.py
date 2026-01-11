@@ -15,7 +15,7 @@ import yfinance as yf
 import streamlit as st
 from curl_cffi import requests
 
-from src.utils.utils import set_page_state
+from src.utils.utils import init_page
 from src.utils.static_values import exchange_timezones
 
 CHUNK_SIZE = 5
@@ -125,7 +125,7 @@ def timezones_fragment(tz_data: dict):
 
 
 def main():
-    set_page_state()
+    init_page()
 
     st.title("Welcome to OmniQuant")
 

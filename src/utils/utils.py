@@ -5,19 +5,22 @@
     Date: 03/04/2024
     Author: Joshua David Golafshan
 """
+
+import uuid
 import datetime
 import yfinance as yf
 import streamlit as st
 import streamlit_javascript
 from typing import Optional, Any
 from pymongo.errors import DuplicateKeyError
-from streamlit_javascript import st_javascript
+from src.utils.query_handler import QueryHandler
+
 
 def search_logic(value: str):
     # Remove
     if value:
         st.session_state.code = value
-        insert_document(st.session_state.get("user_id"), datetime.datetime.now(), get_url())
+        insert_document(st.session_state.get("user_id"), datetime.datetime.now(datetime.UTC), get_url())
         st.session_state["current_page"] = "pages/instrument.py"
         st.switch_page("pages/instrument.py")
 
@@ -35,7 +38,7 @@ def get_url():
     for query in parameters_st:
         parameters += f"{query}={parameters_st[query]}&"
 
-    x = st.context.url + "?" + parameters[:-1]
+    return st.context.url + "?" + parameters[:-1]
 
 def yahoo_data(ticker: str) -> Optional[Any]:
     try:
@@ -46,22 +49,31 @@ def yahoo_data(ticker: str) -> Optional[Any]:
 
 def set_page_state():
     """
-    Set the current page and log navigation once per page.
+    Log a page view once per logical page change.
     """
 
-    current_url = get_url()
+    current_page = get_url()
+    last_page = st.session_state.get("last_logged_page")
 
-    # Logical page change
-    if st.session_state.get("current_page") != current_url:
-        st.session_state["current_page"] = current_url
+    if current_page != last_page:
+        st.session_state["last_logged_page"] = current_page
 
-        user_id = st.session_state.get("user_id")
-        utc_now = datetime.datetime.now(datetime.timezone.utc)
+        insert_document(
+            user_id=st.session_state.get("user_id"),
+            datetime_custom=datetime.datetime.now(datetime.UTC),
+            page_url=current_page
+        )
 
-        # Prevent duplicate inserts on reruns
-        if st.session_state.get("last_logged_url") != current_url:
-            insert_document(user_id, utc_now, current_url)
-            st.session_state["last_logged_url"] = current_url
+@st.cache_resource
+def user_identifier():
+    user_id = st.session_state.get("user_id")
+    if user_id:
+        return user_id
+
+    user_id = str(uuid.uuid4())
+    st.session_state.user_id = user_id
+    return user_id
+
 
 
 def set_root_css():
@@ -141,3 +153,7 @@ def insert_document(user_id, datetime_custom, page_url):
 
 def get_user_timezone():
     return streamlit_javascript.st_javascript("Intl.DateTimeFormat().resolvedOptions().timeZone")
+
+def init_page():
+    set_page_state()
+    user_identifier()

@@ -12,7 +12,7 @@ from src.utils import utils
 from src.components import sidebar
 from pymongo.server_api import ServerApi
 from src.components.simple_components import user_component
-from src.utils.utils import set_root_css
+from src.utils.utils import set_root_css, user_identifier
 
 
 @st.cache_resource
@@ -38,22 +38,8 @@ def get_pages():
 def inject_css_files():
     st.markdown(utils.load_css("assets/css/styles.css"), unsafe_allow_html=True)
 
-
-@st.cache_resource
-def user_identifier():
-    user_id = st.session_state.get("user_id")
-    if user_id:
-        print("user_id", user_id)
-        return user_id
-
-    user_id = str(uuid.uuid4())
-    st.session_state.user_id = user_id
-    return user_id
-
-
 def main():
     st.session_state["db_client"] = get_db_connection()
-
     user_component(user_identifier())
 
     st.markdown(set_root_css(), unsafe_allow_html=True)
