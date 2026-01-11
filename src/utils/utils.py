@@ -66,14 +66,16 @@ def set_page_state():
 
 @st.cache_resource
 def user_identifier():
-    user_id = st.session_state.get("user_id")
-    if user_id:
-        return user_id
-
-    user_id = str(uuid.uuid4())
-    st.session_state.user_id = user_id
-    return user_id
-
+    """
+        Generate a unique user ID for this session if it doesn't exist.
+        Persist in session_state.
+    """
+    if "user_id" not in st.session_state:
+        st.session_state.user_id = str(uuid.uuid4())
+        print("Generated new user_id:", st.session_state.user_id)
+    else:
+        print("Existing user_id:", st.session_state.user_id)
+    return st.session_state.user_id
 
 
 def set_root_css():
@@ -155,5 +157,6 @@ def get_user_timezone():
     return streamlit_javascript.st_javascript("Intl.DateTimeFormat().resolvedOptions().timeZone")
 
 def init_page():
-    set_page_state()
     user_identifier()
+
+    set_page_state()

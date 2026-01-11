@@ -9,38 +9,42 @@
 
 import numpy as np
 import streamlit as st
-from src.utils.utils import set_page_state, yahoo_data
+from src.utils.utils import init_page, yahoo_data
 from src.components.simple_components import option_metric
 from src.core.black_scholes_model import BlackScholesModel
+from src.utils.query_handler import QueryHandler, QueryDataType
 from src.core.monte_carlo_simulation import MonteCarloSimulation
 from src.components.graphing_components import plot_option_heatmap, monte_carlo_chart, historical_chart
 
+query_handler = QueryHandler([
+    QueryDataType("code", str, ""),
+    QueryDataType("tab", str, "Historical Chart"),
+])
 
 FILTER_KEYS = [
-    "code", "tab",
-    "spot_price", "strike_price", "vol", "rfir", "ttm", "num_of_contracts", "vol_min", "vol_max", "spot_min", "spot_max"
+    "spot_price", "strike_price", "vol", "rfir", "ttm", "num_of_contracts", "vol_min", "vol_max", "spot_min", "spot_max",
     "num_of_sims", "look_back_period", "look_forward_period"
 ]
 
-def sync_query_params():
-    for key in FILTER_KEYS:
-        value = st.session_state.get(key)
+def sync_single_param(key: str):
+    value = st.session_state.get(key)
 
-        if key == "code" or key == "tab":
-            st.query_params[key] = str(value).strip()
-            continue
+    if key in ("code", "tab"):
+        st.query_params[key] = str(value).strip()
+        return
 
-        # Everything else → stripped string
-        st.query_params[key] = float(value)
+    if value is None:
+        st.query_params.pop(key, None)
+        return
+
+    if key in ("num_of_contracts", "num_of_sims", "look_back_period", "look_forward_period"):
+        st.query_params[key] = int(value)
+        return
+
+    # Everything else → stripped string
+    st.query_params[key] = float(value)
 
 
-def clear_filters():
-    for key in FILTER_KEYS:
-        if key == "code" or key == "tab":
-            st.session_state[key] = None
-
-        st.session_state[key] = None
-    st.query_params.clear()
 
 @st.cache_data(show_spinner="Fetching instrument data...")
 def get_instrument_data(symbol: str):
@@ -50,7 +54,6 @@ def get_instrument_data(symbol: str):
         "history": ticker.history(period="max")
     }
 
-
 def display_instrument(stock_info):
     st.html(f"""
                 <div style="display:flex; align-items: baseline;">
@@ -58,7 +61,6 @@ def display_instrument(stock_info):
                     <div style="padding-left:1rem; font-size:2.25rem">({stock_info["symbol"]})</div>
                 </div>
             """)
-
 
 def calculate_stock_summary_statistics(stock_data):
     latest_price = stock_data.iloc[0]["Close"]
@@ -105,43 +107,43 @@ def show_bs_model():
 
         current_price = input_column_1.number_input(
             label="Current Price",
-            value=float(st.query_params.get("current_price", st.session_state.current_price)),
+            value=float(st.query_params.get("spot_price", st.session_state.current_price)),
             key="spot_price",
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("spot_price")
         )
         strike_price = input_column_2.number_input(
             label="Strike",
             value=float(st.query_params.get("spot_price", st.session_state.current_price)) * 1.05,
             key="strike_price",
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("strike_price")
         )
 
         volatility = input_column_1.number_input(
             label="Volatility",
             value=float(st.query_params.get("vol", 0.5)),
             key="vol",
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("vol")
         )
 
         interest_rate = input_column_2.number_input(
             label="Interest rate",
             value=float(st.query_params.get("rfir", 0.05)),
             key="rfir",
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("rfir")
         )
 
         time_to_maturity = input_column_1.number_input(
             label="Time to maturity (Year)",
-            value=float(st.query_params.get("rfir", 0.05)),
+            value=float(st.query_params.get("ttm", 0.05)),
             key="ttm",
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("ttm")
         )
 
         num_of_contracts = input_column_2.number_input(
             label="Number of Contracts",
             value=float(st.query_params.get("num_of_contracts", 1)),
             key="num_of_contracts",
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("num_of_contracts")
         )
 
         st.markdown("##### Heatmap Variation ")
@@ -153,7 +155,7 @@ def show_bs_model():
             key="vol_min",
             value=volatility * 0.5,
             step=0.01,
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("vol_min")
         )
 
         vol_max = input_column_12.number_input(
@@ -163,7 +165,7 @@ def show_bs_model():
             key="vol_max",
             value=volatility * 1.5,
             step=0.01,
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("vol_max")
         )
 
         spot_min = input_column_22.number_input(
@@ -172,7 +174,7 @@ def show_bs_model():
             key="spot_min",
             value=strike_price * 0.8,
             step=0.01,
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("spot_min")
         )
 
         spot_max = input_column_22.number_input(
@@ -181,7 +183,7 @@ def show_bs_model():
             key="spot_max",
             value=strike_price * 1.2,
             step=0.01,
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("spot_max")
         )
 
     with col2:
@@ -238,7 +240,7 @@ def show_monte_carlo_page():
             value=int(st.query_params.get("num_of_sims", 30)),
             step=5,
             max_value=300,
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("num_of_sims")
         )
 
         look_back = st.number_input(
@@ -247,7 +249,7 @@ def show_monte_carlo_page():
             key="look_back_period",
             value=int(st.query_params.get("look_back_period", 30)), step=5,
             max_value=100,
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("look_back_period")
         )
 
         look_forward = st.number_input(
@@ -257,7 +259,7 @@ def show_monte_carlo_page():
             value=int(st.query_params.get("look_forward_period", 30)),
             step=5,
             max_value=365 * 3,
-            on_change=sync_query_params
+            on_change=lambda: sync_single_param("look_forward_period")
         )
 
     mc_sim = MonteCarloSimulation(get_instrument_data(instrument_code)["history"]["Close"], look_forward, look_back,
@@ -274,27 +276,30 @@ def show_info(instrument_data):
     display_instrument(stock_info)
     display_summary_statistics(stock_data)
 
-    # Use distinct tab names
-    chart_tab, bs_model_tab, monte_carlo_tab = st.tabs(
-        ["Historical Chart", "Black-Scholes", "Monte Carlo"], default=st.query_params.get("tab","Historical Chart")
-    )
+
+    TAB_NAMES = ["Historical Chart", "Black-Scholes", "Monte Carlo"]
+    if "tab" not in st.session_state:
+        st.session_state.tab = st.query_params.get("tab", TAB_NAMES[0])
+
+    chart_tab, bs_model_tab, monte_carlo_tab = st.tabs(TAB_NAMES, default=st.query_params.get("tab","Historical Chart"))
 
     with chart_tab:
         if not stock_data.empty:
-            st.query_params.tab = "Historical Chart"
             plot_historical_chart(stock_data)
+            st.query_params.tab = "Historical Chart"
 
     with bs_model_tab:
-        st.query_params.tab = "Black-Scholes"
         show_bs_model()
+        st.query_params.tab = "Black-Scholes"
 
     with monte_carlo_tab:
-        st.query_params.tab = "Monte Carlo"
         show_monte_carlo_page()
+        st.query_params.tab = "Monte Carlo"
 
 
 if __name__ == "__main__":
-    set_page_state()
+    init_page()
+    query_handler.init_query_parameters()
 
     instrument_code = st.session_state.get("code", "NONE")
     st.query_params.code = instrument_code

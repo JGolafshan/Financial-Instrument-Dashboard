@@ -7,7 +7,7 @@
 """
 
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Any, List, Optional
 import streamlit as st
 import pandas as pd
 
@@ -15,7 +15,7 @@ import pandas as pd
 class QueryDataType:
     query_name: str
     query_type: Any
-    query_init_value: Any
+    query_init_value: Optional[Any] = None
 
 
 class QueryHandler:
@@ -30,7 +30,7 @@ class QueryHandler:
                 # st.query_params always gives a list of strings
                 current_value = self._convert_value(url_value, query.query_type, query.query_init_value)
             else:
-                #Use existing session_state or fallback
+                # Use existing session_state or fallback
                 current_value = st.session_state.get(query.query_name, query.query_init_value)
                 current_value = self._convert_value(current_value, query.query_type, query.query_init_value)
 
@@ -74,9 +74,13 @@ class QueryHandler:
                 return str(value)
             elif target_type == bool:
                 return bool(value)
+            elif target_type == pd.Timestamp:
+                if isinstance(value, pd.Timestamp):
+                    return value
+                return pd.to_datetime(value)
             else:
                 return value
-        except Exception as e:
+        except Exception:
             return fallback
 
     def _value_to_url_str(self, value: Any, value_type: Any) -> str:
@@ -87,5 +91,3 @@ class QueryHandler:
             return "1" if value else "0"
         else:
             return str(value)
-
-

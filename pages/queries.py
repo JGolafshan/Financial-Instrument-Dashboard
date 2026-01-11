@@ -20,8 +20,16 @@ query_handler = QueryHandler([
     QueryDataType("q", str, ""),
     QueryDataType("filter_date", pd.Timestamp, None),
     QueryDataType("page_number", int, 1),
-    QueryDataType("size", int, 25),
+    QueryDataType("size", int, 25)
 ])
+
+def clear_filters():
+    st.session_state["q"] = ""
+    st.session_state["filter_date"] = None
+    st.session_state["page_number"] = 1
+    st.session_state["size"] = PAGE_SIZES[0]
+
+    st.query_params.clear()
 
 
 @st.cache_data(show_spinner="Loading user history...", ttl="10s")
@@ -103,12 +111,18 @@ def main():
 
         # Page size selectbox
         page_size_val = st.session_state.get("size", PAGE_SIZES[0])
+
+        def on_size_change():
+            st.session_state["page_number"] = 1
+            st.query_params["page_number"] = 1
+            query_handler.sync_query_params()
+
         st.selectbox(
             label="Page Size",
             options=PAGE_SIZES,
             index=PAGE_SIZES.index(page_size_val),
             key="size",
-            on_change=query_handler.sync_query_params,
+            on_change=on_size_change,
         )
 
         # Clear filters
@@ -117,7 +131,7 @@ def main():
         st.button(
             label=f"Clear Filters ({len(active_filters)})" if active_filters else "Clear Filters",
             width="stretch",
-            on_click=query_handler.clear,
+            on_click=clear_filters,
             disabled=not active_filters,
         )
 
@@ -138,14 +152,10 @@ def main():
             filtered_df = filtered_df[mask]
 
         # Pagination
-        batch_size = st.session_state.get("size", PAGE_SIZES[0])
-        total_pages = max((len(filtered_df) - 1) // batch_size + 1, 1)
+        page_size = st.session_state.get("size", PAGE_SIZES[0])
         current_page = st.session_state.get("page_number", 1)
-        current_page = min(max(current_page, 1), total_pages)
 
-        start_idx = (current_page - 1) * batch_size
-        end_idx = min(start_idx + batch_size, len(filtered_df))
-        paged_df = filtered_df.iloc[start_idx:end_idx]
+        total_pages = max((total_entries - 1) // page_size + 1, 1)
 
         pagination = st.container()
 
@@ -161,14 +171,18 @@ def main():
                 on_change=query_handler.sync_query_params,
             )
 
-    # Display DataFrame
-    if paged_df.empty:
-        pagination.warning("No rows found matching filtering criteria.")
+        start_idx = (current_page - 1) * page_size + 1
+        end_idx = min(current_page * page_size, total_entries)
 
+    if filtered_df.empty:
+        pagination.warning("No rows found matching filtering criteria.")
     else:
-        pagination.markdown(f"Displaying **{start_idx + 1}** to **{end_idx}** of **{len(filtered_df)}** entries")
+        pagination.markdown(
+            f"Displaying **{start_idx}** to **{end_idx}** of **{total_entries}** entries"
+        )
+
         pagination.dataframe(
-            paged_df,
+            filtered_df,
             width="stretch",
             height=400,
             hide_index=True,
@@ -178,6 +192,7 @@ def main():
                 "page_url": st.column_config.LinkColumn("Page Url", width="small"),
             }
         )
+
 
 if __name__ == "__main__":
     main()
