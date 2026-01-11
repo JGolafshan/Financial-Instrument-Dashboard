@@ -10,7 +10,7 @@ import pandas as pd
 import streamlit as st
 from typing import Dict
 from pymongo import DESCENDING
-from src.utils.utils import init_page
+from src.utils.utils import user_identifier
 from src.utils.query_handler import QueryDataType, QueryHandler
 from src.components.simple_components import title_divider
 
@@ -80,7 +80,8 @@ def get_active_filters() -> Dict[str, str]:
 
 
 def main():
-    init_page()
+    user_identifier()
+
     query_handler.init_query_parameters()
 
     # Header
